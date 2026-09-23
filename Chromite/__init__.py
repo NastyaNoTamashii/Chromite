@@ -8,7 +8,7 @@ __title__ = "Chromite"
 __author__ = "NastyaNoTamashii"
 __license__ = "MIT"
 __copyright__ = "Copyright 2026-present NastyaNoTamashii"
-__version__ = "0.4"
+__version__ = "0.5"
 
 from .formatting import color as _color, color_bg as _color_bg, style as _style
 from .io import (
