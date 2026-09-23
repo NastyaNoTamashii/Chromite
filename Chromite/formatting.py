@@ -21,6 +21,15 @@ class Color(BaseCodes):
     violet = make_ansi(35)
     cyan   = make_ansi(36)
     white  = make_ansi(37)
+    pink   = make_ansi('38;5;206')
+
+    light_red    = make_ansi(91)
+    light_green  = make_ansi(92)
+    light_yellow = make_ansi(93)
+    light_blue   = make_ansi(94)
+    light_violet = make_ansi(95)
+    light_cyan   = make_ansi(96)
+    light_yellow = make_ansi(97)
 
     @property
     def random(self) -> ANSIElement:
@@ -37,18 +46,30 @@ class ColorBG(BaseCodes):
     cyan   = make_ansi(46)
     white  = make_ansi(47)
 
+    light_red    = make_ansi(101)
+    light_green  = make_ansi(102)
+    light_yellow = make_ansi(103)
+    light_blue   = make_ansi(104)
+    light_violet = make_ansi(105)
+    light_cyan   = make_ansi(106)
+    light_yellow = make_ansi(107)
+
     @property
     def random(self) -> ANSIElement:
         """Returns a random background color each time."""
         return make_ansi(random.randint(40, 47))
 
 class Style(BaseCodes):
-    bold     = make_ansi(1)
-    italic   = make_ansi(3)
-    url      = make_ansi(4)
-    link     = make_ansi(5)
-    selected = make_ansi(7)
-
+    bold      = make_ansi(1)
+    dim       = make_ansi(2)
+    italic    = make_ansi(3)
+    underline = make_ansi(4)
+    blink     = make_ansi(5)
+  # blink     = make_ansi(6) Also blink
+    inversed  = make_ansi(7)
+    hide      = make_ansi(8)
+    strike    = make_ansi(9)
+    
 color = Color()
 color_bg = ColorBG()
 style = Style()
