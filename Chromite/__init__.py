@@ -9,7 +9,9 @@ __copyright__ = "Copyright 2026-present NastyaNoTamashii"
 __version__ = "0.4"
 
 from .formatting import color, color_bg, style
-from .io import Write, clear, sjoin
+from .io import (
+    Write, Catch, clear, sjoin
+)
 
 from .table import Table
 
@@ -17,4 +19,4 @@ Color = color
 ColorBG = color_bg
 Style = style
 
-__all__ = ["Write", "Color", "ColorBG", "Style", "Table", "clear", "sjoin"]
+__all__ = ["Write", "Catch", "Color", "ColorBG", "Style", "Table", "clear", "sjoin"]
