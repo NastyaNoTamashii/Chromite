@@ -1,5 +1,13 @@
+"""
+
+    Copyright (C) 2026 NastyaNoTamashii.
+
+"""
+
 import random
 from .codes import ANSIElement, make_ansi
+
+__all__ = ['color', 'color_bg', 'style']
 
 class BaseCodes:
     RESET = make_ansi(0)
