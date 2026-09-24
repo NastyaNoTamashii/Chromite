@@ -4,7 +4,7 @@
 
 """
 
-__all__ = ['Write', 'Catch', 'sjoin', 'clear']
+__all__ = ['Write', 'Catch', 'cInject', 'clear']
 
 import sys
 from typing import Union, List, Tuple, Optional
@@ -225,7 +225,7 @@ class Catch:
     def __call__(self) -> Write:
         return self.up()
 
-def sjoin(text: str, compose: StyleType) -> str:
+def cInject(text: str, compose: StyleType) -> str:
     return f"{compose}{text}{BaseCodes.RESET}"
 
 def clear() -> None:

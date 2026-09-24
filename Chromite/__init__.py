@@ -12,7 +12,7 @@ __version__ = "0.6.0"
 
 from .formatting import color as _color, color_bg as _color_bg, style as _style
 from .io import (
-    Write, Catch, clear, sjoin
+    Write, Catch, clear, cInject
 )
 
 from .table import Table
@@ -21,4 +21,4 @@ Color = _color
 ColorBG = _color_bg
 Style = _style
 
-__all__ = ["Write", "Catch", "Color", "ColorBG", "Style", "Table", "clear", "sjoin"]
+__all__ = ["Write", "Catch", "Color", "ColorBG", "Style", "Table", "clear", "cInject"]

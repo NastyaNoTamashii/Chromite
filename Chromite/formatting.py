@@ -69,6 +69,7 @@ class Style(BaseCodes):
     inversed  = make_ansi(7)
     hide      = make_ansi(8)
     strike    = make_ansi(9)
+    regular   = make_ansi(22)
     
 color = Color()
 color_bg = ColorBG()
