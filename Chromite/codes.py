@@ -6,7 +6,7 @@
 
 import os
 
-# Инициализируем поддержку ANSI в Windows-консолях
+# Initialize ANSI support in Windows consoles.
 os.system("")
 
 CSI = "\033["
@@ -18,26 +18,25 @@ class ANSIElement(str):
     pass
 
 def make_ansi(code: int) -> ANSIElement:
+    """Make ANSI code."""
     return ANSIElement(f"{CSI}{code}m")
 
-# --- Новые функции для работы с курсором ---
-
 def move_cursor(x: int, y: int) -> ANSIElement:
-    """Перемещает курсор на позицию (x, y) / (col, row). Нумерация с 1,1."""
+    """Moves the cursor to position (x, y) / (col, row). Numbering starts at 1, 1."""
     return ANSIElement(f"{CSI}{y};{x}H")
 
 def hide_cursor() -> ANSIElement:
-    """Скрывает курсор"""
+    """Hides the cursor."""
     return ANSIElement(f"{CSI}?25l")
 
 def show_cursor() -> ANSIElement:
-    """Показывает курсор"""
+    """Shows the cursor."""
     return ANSIElement(f"{CSI}?25h")
 
 def save_cursor() -> ANSIElement:
-    """Сохраняет текущую позицию курсора"""
+    """Saves the current cursor position."""
     return ANSIElement(f"{CSI}s")
 
 def restore_cursor() -> ANSIElement:
-    """Восстанавливает сохраненную позицию курсора"""
+    """Restores the saved cursor position."""
     return ANSIElement(f"{CSI}u")

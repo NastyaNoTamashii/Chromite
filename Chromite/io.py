@@ -11,10 +11,10 @@ from typing import Union, List, Tuple, Optional
 from .codes import ANSIElement, move_cursor, show_cursor
 from .formatting import BaseCodes
 
-# Тип-хинт для стилей: один элемент или список/кортеж элементов
+# Type Hint for styles: one element or list/tuple of elements
 StyleType = Union[ANSIElement, List[ANSIElement], Tuple[ANSIElement, ...]]
 
-PosType = Tuple[int, int]  # (x, y) или (col, row)
+PosType = Tuple[int, int]  # (x, y) or (col, row)
 
 try:
     import msvcrt
@@ -25,7 +25,7 @@ except ImportError:
     WINDOWS = False
 
 def _read_masked_input(mask_char: str) -> str:
-    """Считывает ввод с маскировкой символов без стандартного эха терминала."""
+    """Reads input with character masking, without standard terminal echo."""
     buf = []
     while True:
         if WINDOWS:
@@ -88,38 +88,39 @@ class Write:
         :param pos: Set position (x, y).
         """
         self.text = str(text)
+        self.compose = compose
+        self._validate_compose(compose)
         self.pos = pos
 
-        if compose:
-            # 1. Если передан один правильный ANSI-стиль
-            if isinstance(compose, ANSIElement):
-                self.text = f"{compose}{self.text}{BaseCodes.RESET}"
-            
-            # 2. Если передана коллекция стилей (например: style=[color.red, style.bold])
-            elif isinstance(compose, (list, tuple)) and all(isinstance(comp, ANSIElement) for comp in compose):
-                ansi_sequence = "".join(compose)
+    def _validate_compose(self, compose: StyleType) -> None:
+        if compose is None:
+            return
+        if isinstance(compose, ANSIElement):
+            return
+        if isinstance(compose, (list, tuple)) and all(isinstance(comp, ANSIElement) for comp in compose):
+            return
+        raise TypeError("Style must be an ANSIElement or a collection of ANSIElements (from Chromite).")
+
+    def flush(self) -> str:
+        """Assembles and returns the styled string with position codes."""
+        if self.compose:
+            if isinstance(self.compose, ANSIElement):
+                self.text = f"{self.compose}{self.text}{BaseCodes.RESET}"
+            elif isinstance(self.compose, (list, tuple)):
+                ansi_sequence = "".join(str(comp) for comp in self.compose)
                 self.text = f"{ansi_sequence}{self.text}{BaseCodes.RESET}"
             
-            # 3. Если подсунули левую строку или не тот объект
-            else:
-                raise TypeError("Style must be an ANSIElement or a collection of ANSIElements (from Chromite).")
-
-    def render_list(self, items: list) -> None:
-        """Красиво выводит нумерованный список в консоль"""
-        for index, item in enumerate(items):
-            print(f"{index}. {item}")
-    
-    def flush(self) -> str:
-        """Возвращает строку с учетом позиционирования курсора"""
+        """Returns a string."""
         if self.pos is not None:
             x, y = self.pos
-            # Приводим к 1-based координатам терминала (1, 1 — верхний левый угол)
+            # Converting to 1-based terminal coordinates (1, 1 — top-left corner)
             ansi_pos = move_cursor(max(1, x + 1), max(1, y + 1))
             return f"{ansi_pos}{self.text}"
+        
         return self.text
 
     def display(self) -> None:
-        """Сразу выводит текст в консоль"""
+        """Immediately outputs text to the terminal"""
         print(self.flush(), end="", flush=True)
 
     def __str__(self) -> str:
@@ -140,10 +141,9 @@ class Catch:
         """
         :param prompt: Prompt text.
         :param compose: Set style for prompt text.
-        :param catch_compose: Стиль для вводимого текста и возвращаемого Write.
-        :param pos: Позиция (x, y) для отрисовки поля ввода.
-        :param type: Тип ввода ("text", "password", "pin", "hidden", "int").
-        :param mask_char: Символ маскировки при type="password".
+        :param catch_compose: Style for the input text and the value returned by Write.
+        :param pos: Position (x, y) for rendering the input field.
+        :param type: Input type ("text", "password", "pin", "hidden", "int").
         """
         self.prompt = str(prompt)
         self.compose = compose
@@ -151,36 +151,49 @@ class Catch:
         self.pos = pos
         self.type = type.lower()
 
-        # Применяем стили к промпту
-        if self.compose:
-            if isinstance(self.compose, ANSIElement):
-                self.prompt = f"{self.compose}{self.prompt}{BaseCodes.RESET}"
-            elif isinstance(self.compose, (list, tuple)) and all(isinstance(comp, ANSIElement) for comp in self.compose):
-                ansi_seq = "".join(str(comp) for comp in self.compose)
-                self.prompt = f"{ansi_seq}{self.prompt}{BaseCodes.RESET}"
+        self._validate_style(self.compose)
+        self._validate_style(self.catch_compose)
+
+    def _validate_style(self, style: StyleType) -> None:
+        if style is None or isinstance(style, ANSIElement):
+            return
+        if isinstance(style, (list, tuple)) and all(isinstance(s, ANSIElement) for s in style):
+            return
+        raise TypeError("Style must be an ANSIElement or a collection of ANSIElements (from Chromite).")
+
+    def _apply_style(self, text: str, style: StyleType) -> str:
+        """Вспомогательный метод для применения стилей."""
+        if not style:
+            return text
+        if isinstance(style, ANSIElement):
+            return f"{style}{text}{BaseCodes.RESET}"
+        if isinstance(style, (list, tuple)):
+            ansi_seq = "".join(str(s) for s in style)
+            return f"{ansi_seq}{text}{BaseCodes.RESET}"
+        return text
 
     def up(self) -> Write:
         """
-        Перемещает курсор (если задан pos), активирует style для ввода,
-        считывает текст с учетом type и сбрасывает стили.
+        Moves the cursor (if `pos` is specified), activates the input style,
+        reads the text according to `type`, and resets the styles.
         """
-        formatted_prompt = self.prompt
+        formatted_prompt = self._apply_style(self.prompt, self.compose)
 
-        # 1. Если заданы координаты, добавляем перемещение курсора
+        # If coordinates are specified, add cursor position
         if self.pos is not None:
             x, y = self.pos
             ansi_pos = move_cursor(max(1, x + 1), max(1, y + 1))
             formatted_prompt = f"{ansi_pos}{self.prompt}"
 
-        # 2. Подготавливаем ANSI-код для стиля ввода
+        # Preparing the ANSI code for the input style.
         input_ansi_start = ""
         if self.catch_compose:
             if isinstance(self.catch_compose, ANSIElement):
                 input_ansi_start = str(self.catch_compose)
-            elif isinstance(self.catch_compose, (list, tuple)) and all(isinstance(s, ANSIElement) for s in self.catch_compose):
+            elif isinstance(self.catch_compose, (list, tuple)):
                 input_ansi_start = "".join(str(s) for s in self.catch_compose)
 
-        # 3. Включаем отображение курсора и накладываем стиль на сам ввод
+        # Enable the cursor display and apply a style to the input itself.
         full_prompt = f"{show_cursor()}{formatted_prompt}{input_ansi_start}"
 
         try:
@@ -206,20 +219,21 @@ class Catch:
                     if raw.strip().isdigit():
                         user_input = raw
                         break
-                    # Если введено не число — очищаем строку и повторяем
+
+                    # If the input is not a number, clear the string and repeat.
                     sys.stdout.write(f"\033[1A\033[2K")
                     sys.stdout.flush()
 
             else:
-                # Стандартный текстовый ввод
+                # Standard text input.
                 user_input = input(full_prompt)
 
         finally:
-            # Сбрасываем стили терминала
+            # Resetting terminal styles.
             sys.stdout.write(str(BaseCodes.RESET))
             sys.stdout.flush()
 
-        # Возвращаем объект Write, сохраняя в нем catch_compose
+        # Return the Write object, storing catch_compose within it.
         return Write(user_input, compose=self.catch_compose)
 
     def __call__(self) -> Write:

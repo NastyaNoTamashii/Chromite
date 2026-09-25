@@ -37,7 +37,14 @@ password = Chromite.cInject(password, Style.italic)
 pin = Chromite.cInject(pin, Style.italic)
 age = Chromite.cInject(age, Style.italic)
 
-Chromite.Write(f'Login > {login}\n', compose=[Chromite.Color.cyan]).display()
-Chromite.Write(f'Password > {password}\n', compose=[Chromite.Color.cyan]).display()
-Chromite.Write(f'PIN-код > {pin}\n', compose=[Chromite.Color.cyan]).display()
-Chromite.Write(f'Возраст > {age}', compose=[Chromite.Color.cyan]).display()
+auth_list = [
+    f'Login > {login}',
+    f'Password > {password}',
+    f'PIN-код > {pin}',
+    f'Возраст > {age}'
+]
+
+Chromite.List.pointed(
+    auth_list, 
+    bullet_compose = Color.yellow
+).display()

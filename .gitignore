@@ -1,1 +1,8 @@
+# Python cache
 __pycache__/
+
+# Git files
+.git
+
+# Mac-OS cache files
+.DS_Store
