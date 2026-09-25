@@ -9,7 +9,7 @@
 </h3>
 
 ## About
-<strong>Chromite</strong> Chromite is a framework for text and ASCI formatting in Python.
+<strong>Chromite</strong> Chromite is a lightweight, zero-dependency Python library for building rich terminal user interfaces (TUI). It offers an elegant, object-oriented toolkit for styling output, handling interactive input, and rendering custom UI components.
 
 An optimized library that simplifies writing code and helps with the tasks provided.
 
