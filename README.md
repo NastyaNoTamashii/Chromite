@@ -49,10 +49,12 @@ pip install -e .
 ---
 
 <div align="center">
-Any question? Contact me in discord `uwawuwa`
+Any question? Contact me in discord <code>uwawuwa</code>
 <br>
 <br>
-Made with ❤️ by [NastyaNoTamashii](https://github.com/NastyaNoTamashii)
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/NastyaNoTamashii">NastyaNoTamashii</a>
+</p>
  
 [⬆ Back to top](#-Chromite)
  
