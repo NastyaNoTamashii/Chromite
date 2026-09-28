@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/NastyaNoTamashii/Chromite/blob/main/assets/Chromite.png" alt="Chromite" width="200" height="200">
+  <img src="https://github.com/NastyaNoTamashii/Chromite/blob/main/assets/Chromitel.png" alt="Chromite" width="200" height="200">
   <h1>Chromite</h1>
 </div>
 
