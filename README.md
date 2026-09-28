@@ -1,8 +1,4 @@
-<p align="center">
-  <h1>
-    Chromite
-  </h1>
-</p>
+# ![Chromite Logo](https://github.com/NastyaNoTamashii/Chromite/blob/main/assets/Chromite.png) Chromite
 
 <h3 align="center">
     This library is currently under development.
