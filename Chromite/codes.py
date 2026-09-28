@@ -11,7 +11,9 @@ os.system("")
 
 CSI       = "\033["
 CSIX256   = "\033[38;5;" # "38;5;" — To activate the 256-color palette mode (8-bit).
-CSIX256BG = "\033[48;5;" # "48;5;" — To activate the 256-color palette mode (8-bit).
+CSIX256BG = "\033[48;5;" # "48;5;" — To activate the 256-color background palette mode (8-bit).
+CSIRGB    = "\033[38;2;" # "48;5;" — To activate the True-color pallete mode (RGB).
+CSIRGBBG  = "\033[48;2;" # "48;5;" — To activate the True-color background pallete mode (RGB).
 
 class ANSIElement(str):
     """
@@ -28,6 +30,12 @@ def make_ansi_x256(code: int, *, bg: bool = None) -> ANSIElement:
     if bg is True:
         return ANSIElement(f"{CSIX256BG}{code}m")
     return ANSIElement(f"{CSIX256}{code}m")
+
+def make_ansi_rgb(r: int, b: int, g: int, *, bg: bool = None) -> ANSIElement:
+    """Make RGB code."""
+    if bg is True:
+        return ANSIElement(f"{CSIRGBBG}{r};{g};{b}m")
+    return ANSIElement(f"{CSIRGB}{r};{b};{g}m")
 
 def move_cursor(x: int, y: int) -> ANSIElement:
     """Moves the cursor to position (x, y) / (col, row). Numbering starts at 1, 1."""

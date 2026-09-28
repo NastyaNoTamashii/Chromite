@@ -1,11 +1,15 @@
 import Chromite
-from Chromite import Color, Style
+from Chromite import Color, ColorBG, Style
 
 Chromite.clear()
 
-Chromite.Write("Wellcome!", compose=[Color.Pink, Style.Bold], pos=(24, 1)).display()
+Chromite.Write("Wellcome!", compose=[Color.Green, Style.Bold], pos=(24, 1)).display()
 print('\n\n')
 
-name = Chromite.Catch("Your name > ", compose=Color.Cyan, catch_compose=Color.Yellow).up()
+name = Chromite.Catch("Your name > ", compose=Color.Blue, catch_compose=Color.LightBlue).up()
 
-print(f"\nHi {name}!")
+print(f"\nHi {name}!\n")
+
+Chromite.Write('Color from RGB\n', compose=Color.rgb(225, 0, 0)).display()
+Chromite.Write('Color from HEX\n', compose=Color.hex('#ff5733')).display()
+Chromite.Write('BG Color\n',       compose=ColorBG.DarkBlue).display()
