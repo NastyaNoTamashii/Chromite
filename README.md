@@ -1,13 +1,7 @@
-<table>
-  <tr>
-    <td>
-      <img src="https://github.com/NastyaNoTamashii/Chromite/blob/main/assets/Chromite.png" alt="Chromite" width="80" height="80">
-    </td>
-    <td>
-      <h1>Chromite</h1>
-    </td>
-  </tr>
-</table>
+<div style="display: flex; align-items: center; gap: 20px;">
+  <img src="https://github.com/NastyaNoTamashii/Chromite/blob/main/assets/Chromite.png" alt="Chromite" width="80" height="80">
+  <h1>Chromite</h1>
+</div>
 
 <h3 align="center">
     This library is currently under development.
