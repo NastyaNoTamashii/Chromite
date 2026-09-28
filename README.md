@@ -3,26 +3,40 @@
   <h1>Chromite</h1>
 </div>
 
-<h3 align="center">
-    This library is currently under development.
-</h3>
+<div align="center">
 
-## About
+[![GitHub release](https://img.shields.io/github/release/NastyaNoTamashii/Chromite.svg?style=for-the-badge)](https://github.com/NastyaNoTamashii/Chromite/releases/)
+[![GitHub license](https://img.shields.io/github/license/NastyaNoTamashii/Chromite.svg?style=for-the-badge)](https://github.com/NastyaNoTamashii/Chromite/blob/master/license)
+[![Pypi downloads](https://img.shields.io/pypi/dm/Chromite?style=for-the-badge&color=pink)](https://pypi.org/project/Chromite/)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/NastyaNoTamashii/Chromite?style=for-the-badge)](https://github.com/NastyaNoTamashii/Chromite/)
+[![Repo size](https://img.shields.io/github/repo-size/NastyaNoTamashii/Chromite?style=for-the-badge&color=orange)](https://GitHub.com/NastyaNoTamashii/Chromite/)
+[![GitHub All Releases](https://img.shields.io/github/downloads/NastyaNoTamashii/Chromite/total?style=for-the-badge)](https://GitHub.com/NastyaNoTamashii/Chromite/releases/)
+
+</div>
+
+## ✨ About
 <strong>Chromite</strong> Chromite is a lightweight, zero-dependency Python library for building rich terminal user interfaces (TUI). It offers an elegant, object-oriented toolkit for styling output, handling interactive input, and rendering custom UI components.
 
 An optimized library that simplifies writing code and helps with the tasks provided.
 
 ---
-## Install Chromite
 
-### Installing from PyPi:
-```commandline
+## 📦 Installation
+ 
+### Via pip (Recommended)
+ 
+```bash
 pip install Chromite
 ```
-### Installing from Git:
-```commandline
-pip install git+https://github.com/NastyaNoTamashii/Chromite
+ 
+### From source
+ 
+```bash
+git clone https://github.com/NastyaNoTamashii/Chromite
+cd Chromite
+pip install -e .
 ```
+
 
 ---
 
@@ -34,6 +48,12 @@ pip install git+https://github.com/NastyaNoTamashii/Chromite
 ### If a feature doesn't work, check if your console supports it.
 ---
 
-## Do you have any questions?
-
-Сontact [me](https://discord.gg/). For help with Chromite.
+<div align="center">
+Any question? Contact me in discord `uwawuwa`
+<br>
+<br>
+Made with ❤️ by [NastyaNoTamashii](https://github.com/NastyaNoTamashii)
+ 
+[⬆ Back to top](#-Chromite)
+ 
+</div>
