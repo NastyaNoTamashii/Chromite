@@ -4,7 +4,7 @@
 
 """
 
-__all__ = ['Write', 'Catch', 'cInject', 'clear']
+__all__ = ['Write', 'Read', 'cInject', 'clear']
 
 import sys
 from typing import Union, List, Tuple, Optional
@@ -89,8 +89,9 @@ class Write:
         """
         self.text = str(text)
         self.compose = compose
-        self._validate_compose(compose)
         self.pos = pos
+
+        self._validate_compose(compose)
 
     def _validate_compose(self, compose: StyleType) -> None:
         if compose is None:
@@ -99,10 +100,16 @@ class Write:
             return
         if isinstance(compose, (list, tuple)) and all(isinstance(comp, ANSIElement) for comp in compose):
             return
-        raise TypeError("Style must be an ANSIElement or a collection of ANSIElements (from Chromite).")
+        raise TypeError("The 'compose' component must have a Chromite object. (Color, ColorBG, Style etc.)")
 
-    def flush(self) -> str:
+    def _text_processing(self) -> str:
         """Assembles and returns the styled string with position codes."""
+        if self.pos is not None:
+            x, y = self.pos
+            # Converting to 1-based terminal coordinates (1, 1 — top-left corner)
+            ansi_pos = move_cursor(max(1, x + 1), max(1, y + 1))
+            return f"{ansi_pos}{self.text}"
+        
         if self.compose:
             if isinstance(self.compose, ANSIElement):
                 self.text = f"{self.compose}{self.text}{BaseCodes.RESET}"
@@ -110,134 +117,130 @@ class Write:
                 ansi_sequence = "".join(str(comp) for comp in self.compose)
                 self.text = f"{ansi_sequence}{self.text}{BaseCodes.RESET}"
             
-        """Returns a string."""
-        if self.pos is not None:
-            x, y = self.pos
-            # Converting to 1-based terminal coordinates (1, 1 — top-left corner)
-            ansi_pos = move_cursor(max(1, x + 1), max(1, y + 1))
-            return f"{ansi_pos}{self.text}"
-        
+        return self.text
+
+    def flush(self) -> str:
+        """Returns the processed string text."""
+        self.text = self._text_processing()
+
         return self.text
 
     def display(self) -> None:
-        """Immediately outputs text to the terminal"""
+        """Immediately outputs text to the terminal."""
         print(self.flush(), end="", flush=True)
 
     def __str__(self) -> str:
         return self.flush()
 
-class Catch:
-    __slots__ = ("prompt", "compose", "catch_compose", "pos", "type")
+    def __call__(self) -> Write:
+        return self.display()
+
+class Read:
+    __slots__ = ("prompt", "compose", "value_compose", "pos", "type",)
 
     def __init__(
         self,
         prompt: str = "> ",
         *,
         compose: StyleType = None,
-        catch_compose: StyleType = None,
+        value_compose: StyleType = None,
         pos: Optional[PosType] = None,
         type: str = "text",
     ):
         """
         :param prompt: Prompt text.
         :param compose: Set style for prompt text.
-        :param catch_compose: Style for the input text and the value returned by Write.
+        :param value_compose: Style for the input text and the value returned by Write.
         :param pos: Position (x, y) for rendering the input field.
         :param type: Input type ("text", "password", "pin", "hidden", "int").
         """
         self.prompt = str(prompt)
         self.compose = compose
-        self.catch_compose = catch_compose
+        self.value_compose = value_compose
         self.pos = pos
         self.type = type.lower()
 
-        self._validate_style(self.compose)
-        self._validate_style(self.catch_compose)
+        self._validate_compose(self.compose)
+        self._validate_compose(self.value_compose)
 
-    def _validate_style(self, style: StyleType) -> None:
+    def _validate_compose(self, style: StyleType) -> None:
         if style is None or isinstance(style, ANSIElement):
             return
         if isinstance(style, (list, tuple)) and all(isinstance(s, ANSIElement) for s in style):
             return
-        raise TypeError("Style must be an ANSIElement or a collection of ANSIElements (from Chromite).")
+        raise TypeError("The 'compose' component must have a Chromite object. (Color, ColorBG, Style etc.)")
 
-    def _apply_style(self, text: str, style: StyleType) -> str:
-        """Вспомогательный метод для применения стилей."""
-        if not style:
-            return text
-        if isinstance(style, ANSIElement):
-            return f"{style}{text}{BaseCodes.RESET}"
-        if isinstance(style, (list, tuple)):
-            ansi_seq = "".join(str(s) for s in style)
-            return f"{ansi_seq}{text}{BaseCodes.RESET}"
-        return text
+    def _input_style(self) -> str:
+        """Applying styles to text."""
+        if not self.compose:
+            return self.prompt
+        if isinstance(self.compose, ANSIElement):
+            return f"{self.compose}{self.prompt}{BaseCodes.RESET}"
+        if isinstance(self.compose, (list, tuple)):
+            ansi_seq = "".join(str(s) for s in self.compose)
+            return f"{ansi_seq}{self.prompt}{BaseCodes.RESET}"
+        return self.prompt
 
-    def up(self) -> Write:
-        """
-        Moves the cursor (if `pos` is specified), activates the input style,
-        reads the text according to `type`, and resets the styles.
-        """
-        formatted_prompt = self._apply_style(self.prompt, self.compose)
-
-        # If coordinates are specified, add cursor position
+    def _prepare_prompt(self) -> str:
+        """Assembles an ANSI string for the prompt and cursor position."""
+        formatted_prompt = self._input_style()
+        
         if self.pos is not None:
             x, y = self.pos
             ansi_pos = move_cursor(max(1, x + 1), max(1, y + 1))
-            formatted_prompt = f"{ansi_pos}{self.prompt}"
-
-        # Preparing the ANSI code for the input style.
+            formatted_prompt = f"{ansi_pos}{formatted_prompt}"
+        
         input_ansi_start = ""
-        if self.catch_compose:
-            if isinstance(self.catch_compose, ANSIElement):
-                input_ansi_start = str(self.catch_compose)
-            elif isinstance(self.catch_compose, (list, tuple)):
-                input_ansi_start = "".join(str(s) for s in self.catch_compose)
+        if self.value_compose:
+            if isinstance(self.value_compose, ANSIElement):
+                input_ansi_start = str(self.value_compose)
+            elif isinstance(self.value_compose, (list, tuple)):
+                input_ansi_start = "".join(str(s) for s in self.value_compose)
 
-        # Enable the cursor display and apply a style to the input itself.
-        full_prompt = f"{show_cursor()}{formatted_prompt}{input_ansi_start}"
+        return f"{show_cursor()}{formatted_prompt}{input_ansi_start}"
 
+    def _input_type(self) -> str:
+        """Processing of input text based on the specified input data type. (password, pin, int etc.)."""
+        full_prompt = self._prepare_prompt()
+
+        if self.type == "password":
+            sys.stdout.write(full_prompt)
+            sys.stdout.flush()
+            return _read_masked_input(mask_char='*')
+
+        elif self.type == "pin":
+            sys.stdout.write(full_prompt)
+            sys.stdout.flush()
+            return _read_masked_input(mask_char='•')
+
+        elif self.type == "hidden":
+            sys.stdout.write(full_prompt)
+            sys.stdout.flush()
+            return _read_masked_input(mask_char="")
+
+        elif self.type in ("int", "number"):
+            while True:
+                raw = input(full_prompt)
+                if raw.strip().isdigit():
+                    return raw
+                sys.stdout.write(f"\033[1A\033[2K")
+                sys.stdout.flush()
+
+        else:
+            return input(full_prompt)
+
+    def execute(self) -> Write:
+        """Main method: initiates the interaction process."""
         try:
-            # 4. Обработка ввода в зависимости от type
-            if self.type == "password":
-                sys.stdout.write(full_prompt)
-                sys.stdout.flush()
-                user_input = _read_masked_input(mask_char='*')
-
-            elif self.type == "pin":
-                sys.stdout.write(full_prompt)
-                sys.stdout.flush()
-                user_input = _read_masked_input(mask_char='•')
-
-            elif self.type == "hidden":
-                sys.stdout.write(full_prompt)
-                sys.stdout.flush()
-                user_input = _read_masked_input(mask_char="")
-
-            elif self.type in ("int", "number"):
-                while True:
-                    raw = input(full_prompt)
-                    if raw.strip().isdigit():
-                        user_input = raw
-                        break
-
-                    # If the input is not a number, clear the string and repeat.
-                    sys.stdout.write(f"\033[1A\033[2K")
-                    sys.stdout.flush()
-
-            else:
-                # Standard text input.
-                user_input = input(full_prompt)
-
+            user_input = self._input_type()
         finally:
-            # Resetting terminal styles.
             sys.stdout.write(str(BaseCodes.RESET))
             sys.stdout.flush()
 
-        # Return the Write object, storing catch_compose within it.
-        return Write(user_input, compose=self.catch_compose)
+        return Write(user_input, compose=self.value_compose)
 
     def __call__(self) -> Write:
-        return self.up()
+        return self.execute()
 
 def cInject(text: str, compose: StyleType) -> str:
     return f"{compose}{text}{BaseCodes.RESET}"

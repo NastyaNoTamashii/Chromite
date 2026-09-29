@@ -6,7 +6,7 @@ Chromite.clear()
 Chromite.Write("Wellcome!", compose=[Color.Green, Style.Bold], pos=(24, 1)).display()
 print('\n\n')
 
-name = Chromite.Catch("Your name > ", compose=Color.Blue, catch_compose=Color.LightBlue).up()
+name = Chromite.Read("Your name > ", compose=Color.Blue, value_compose=Color.LightBlue).execute()
 
 print(f"\nHi {name}!\n")
 

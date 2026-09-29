@@ -8,11 +8,11 @@ __title__ = "Chromite"
 __author__ = "NastyaNoTamashii"
 __license__ = "MIT"
 __copyright__ = "Copyright 2026-present NastyaNoTamashii"
-__version__ = "0.6.3"
+__version__ = "0.6.4"
 
 from .formatting import color as _color, color_bg as _color_bg, style as _style
 from .io import (
-    Write, Catch, clear, cInject
+    Write, Read, clear, cInject
 )
 
 from .table import Table
@@ -22,4 +22,4 @@ Color = _color
 ColorBG = _color_bg
 Style = _style
 
-__all__ = ["Write", "Catch", "Color", "ColorBG", "Style", "Table", "List", "clear", "cInject"]
+__all__ = ["Write", "Read", "Color", "ColorBG", "Style", "Table", "List", "clear", "cInject"]
