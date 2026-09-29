@@ -19,8 +19,6 @@
 
 An optimized library that simplifies writing code and helps with the tasks provided.
 
----
-
 ## 📦 Installation
  
 ### Via pip (Recommended)
