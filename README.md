@@ -15,7 +15,7 @@
 </div>
 
 ## ✨ About
-<strong>Chromite</strong> Chromite is a lightweight, zero-dependency Python library for building rich terminal user interfaces (TUI). It offers an elegant, object-oriented toolkit for styling output, handling interactive input, and rendering custom UI components.
+<strong>Chromite</strong> is a lightweight, zero-dependency Python library for building rich terminal user interfaces (TUI). It offers an elegant, object-oriented toolkit for styling output, handling interactive input, and rendering custom UI components.
 
 An optimized library that simplifies writing code and helps with the tasks provided.
 
