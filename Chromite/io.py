@@ -6,10 +6,11 @@
 
 __all__ = ['Write', 'Read', 'cInject', 'clear']
 
-import sys
+import sys, re
 from typing import Union, List, Tuple, Optional
 from .codes import ANSIElement, move_cursor, show_cursor
-from .formatting import BaseCodes
+from .formatting import BaseCodes, Color, ColorBG, Style
+from ._emoji_map import EMOJI_MAP
 
 # Type Hint for styles: one element or list/tuple of elements
 StyleType = Union[ANSIElement, List[ANSIElement], Tuple[ANSIElement, ...]]
@@ -23,6 +24,52 @@ except ImportError:
     import tty
     import termios
     WINDOWS = False
+
+def _resolve_style_tag(tag_name: str) -> str:
+    """Searches for a style in Color, ColorBG, or Style by name (case-insensitive)."""
+    tag_lower = tag_name.lower()
+    
+    if tag_lower in ("reset", "r"):
+        return str(BaseCodes.RESET)
+
+    for attr in dir(Color):
+        if attr.lower() == tag_lower and not attr.startswith("_"):
+            return str(getattr(Color, attr))
+
+    for attr in dir(ColorBG):
+        if attr.lower() == tag_lower and not attr.startswith("_"):
+            return str(getattr(ColorBG, attr))
+
+    for attr in dir(Style):
+        if attr.lower() == tag_lower and not attr.startswith("_"):
+            return str(getattr(Style, attr))
+
+    return f"${tag_name}$"
+
+
+def parse_markup(text: str) -> str:
+    """
+    Converts :emoji: and $style$ into actual Unicode emojis and style/color codes.
+    """
+    if not text or not isinstance(text, str):
+        return text
+
+    # Replace :emoji:
+    def replace_emoji(match):
+        name = match.group(1)
+        return EMOJI_MAP.get(name, match.group(0))
+
+    # Replace $style$
+    def replace_style(match):
+        name = match.group(1)
+        return _resolve_style_tag(name)
+
+    # :tag:
+    text = re.sub(r":([a-zA-Z0-9_]+):", replace_emoji, text)
+    # $tag$
+    text = re.sub(r"\$([a-zA-Z0-9_]+)\$", replace_style, text)
+
+    return text
 
 def _read_masked_input(mask_char: str) -> str:
     """Reads input with character masking, without standard terminal echo."""
@@ -88,6 +135,7 @@ class Write:
         :param pos: Set position (x, y).
         """
         self.text = str(text)
+        self.text = parse_markup(str(text))
         self.compose = compose
         self.pos = pos
 
@@ -154,7 +202,7 @@ class Read:
         :param pos: Position (x, y) for rendering the input field.
         :param type: Input type ("text", "password", "pin", "hidden", "int").
         """
-        self.prompt = str(prompt)
+        self.prompt = parse_markup(str(prompt))
         self.compose = compose
         self.value_compose = value_compose
         self.pos = pos

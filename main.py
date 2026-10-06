@@ -3,12 +3,13 @@ from Chromite import Color, ColorBG, Style
 
 Chromite.clear()
 
-Chromite.Write("Wellcome!", compose=[Color.Green, Style.Bold], pos=(24, 1)).display()
+Chromite.Write("$BrightRed$Welcome! :tada:$reset$", pos=(24, 1)).display()
 print('\n\n')
 
-name = Chromite.Read("Your name > ", compose=Color.Blue, value_compose=Color.LightBlue).execute()
+name = Chromite.Read("Your name > ", compose=Color.Green, value_compose=Color.LightBlue).execute()
 
-print(f"\nHi {name}!\n")
+Chromite.Write(f"\nHi {name}! :wave:").display()
+print('\n')
 
 Chromite.Write('Color from RGB\n', compose=Color.rgb(225, 0, 0)).display()
 Chromite.Write('Color from HEX\n', compose=Color.hex('#ff5733')).display()
