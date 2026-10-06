@@ -3,7 +3,7 @@ from Chromite import Color, ColorBG, Style
 
 Chromite.clear()
 
-Chromite.Write("$BrightRed$Welcome! :tada:$reset$", pos=(24, 1)).display()
+Chromite.Write("$bg_red$Welcome! :tada:$reset$", pos=(24, 1)).display()
 print('\n\n')
 
 name = Chromite.Read("Your name > ", compose=Color.Green, value_compose=Color.LightBlue).execute()

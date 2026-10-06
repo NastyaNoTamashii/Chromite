@@ -26,20 +26,26 @@ except ImportError:
     WINDOWS = False
 
 def _resolve_style_tag(tag_name: str) -> str:
-    """Searches for a style in Color, ColorBG, or Style by name (case-insensitive)."""
-    tag_lower = tag_name.lower()
-    
+    """Dynamically resolves $style$ and $bg_style$ into ANSI codes."""
+    tag_raw = tag_name.strip()
+    tag_lower = tag_raw.lower()
+
     if tag_lower in ("reset", "r"):
         return str(BaseCodes.RESET)
 
+    # For background colors. Exemple $bg_red$
+    if tag_lower.startswith("bg_"):
+        color_name = tag_lower[3:]  # "bg_" -> "red"
+        for attr in dir(ColorBG):
+            if attr.lower() == color_name and not attr.startswith("_"):
+                return str(getattr(ColorBG, attr))
+
+    # For colors. Exemple $red$
     for attr in dir(Color):
         if attr.lower() == tag_lower and not attr.startswith("_"):
             return str(getattr(Color, attr))
 
-    for attr in dir(ColorBG):
-        if attr.lower() == tag_lower and not attr.startswith("_"):
-            return str(getattr(ColorBG, attr))
-
+    # For styles. Exemple $bold$
     for attr in dir(Style):
         if attr.lower() == tag_lower and not attr.startswith("_"):
             return str(getattr(Style, attr))
