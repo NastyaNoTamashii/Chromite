@@ -10,7 +10,7 @@ import sys, re
 from typing import Union, List, Tuple, Optional
 from .codes import ANSIElement, move_cursor, show_cursor
 from .formatting import BaseCodes, Color, ColorBG, Style
-from ._emoji_map import EMOJI_MAP
+from ._markup import parse_markup
 
 # Type Hint for styles: one element or list/tuple of elements
 StyleType = Union[ANSIElement, List[ANSIElement], Tuple[ANSIElement, ...]]
@@ -24,108 +24,6 @@ except ImportError:
     import tty
     import termios
     WINDOWS = False
-
-def _resolve_style_tag(tag_name: str) -> str:
-    """Dynamically resolves $style$ and $bg_style$ into ANSI codes."""
-    tag_raw = tag_name.strip()
-    tag_lower = tag_raw.lower()
-
-    if tag_lower in ("reset", "r", "no_color"):
-        return str(BaseCodes.RESET)
-    
-    # HEX: $hex#ffffff$ or $hex#fff$
-    if tag_lower.startswith("hex#"):
-        hex_code = tag_raw[3:]
-        try:
-            return str(Color.hex(hex_code))
-        except Exception:
-            return f"${tag_name}$"
-
-    # RGB: $rgb(255,0,0)$ or $rgb255,0,0$
-    if tag_lower.startswith("rgb"):
-        rgb_code = re.sub(r"[^\d,]", "", tag_raw )
-        parts = rgb_code.split(",")
-        if len(parts) == 3 and all(p.isdigit() for p in parts):
-            try:
-                r, g, b = map(int, parts)
-                return str(Color.rgb(r, g, b))
-            except Exception:
-                pass
-        return f"${tag_name}$"
-            
-    """
-    For all background styles.
-    Exemple:
-    - $bg_red$
-    - $bg_hex#ffffff$
-    - $bg_rgb(255,255,255)
-    """
-    if tag_lower.startswith("bg_"):
-        bg_target = tag_lower[3:]
-        bg_raw = tag_raw[3:]
-
-        # Background HEX: $bg_hex#ffffff$ or $bg_hex#fff$
-        if bg_target.startswith("hex#"):
-            hex_code = bg_raw[4:]
-            try:
-                return str(ColorBG.hex(hex_code))
-            except Exception:
-                return f"${tag_name}$"
-
-        # Background RGB: $bg_rgb(255,0,0)$ or $bg_rgb255,0,0$
-        if bg_target.startswith("rgb"):
-            rgb_code = re.sub(r"[^\d,]", "", bg_raw)
-            parts = rgb_code.split(",")
-            if len(parts) == 3 and all(p.isdigit() for p in parts):
-                try:
-                    r, g, b = map(int, parts)
-                    return str(ColorBG.rgb(r, g, b))
-                except Exception:
-                    pass
-            return f"${tag_name}$"
-
-        # 3. Background Named Colors: $bg_red$
-        for attr in dir(ColorBG):
-            if attr.lower() == bg_target and not attr.startswith("_"):
-                return str(getattr(ColorBG, attr))
-
-        return f"${tag_name}$"
-
-    # For colors. Exemple $red$
-    for attr in dir(Color):
-        if attr.lower() == tag_lower and not attr.startswith("_"):
-            return str(getattr(Color, attr))
-
-    # For styles. Exemple $bold$
-    for attr in dir(Style):
-        if attr.lower() == tag_lower and not attr.startswith("_"):
-            return str(getattr(Style, attr))
-
-    return f"${tag_name}$"
-
-def parse_markup(text: str) -> str:
-    """
-    Converts :emoji: and $style$ into actual Unicode emojis and style/color codes.
-    """
-    if not text or not isinstance(text, str):
-        return text
-
-    # Replace :emoji:
-    def replace_emoji(match):
-        name = match.group(1)
-        return EMOJI_MAP.get(name, match.group(0))
-
-    # Replace $style$
-    def replace_style(match):
-        name = match.group(1)
-        return _resolve_style_tag(name)
-
-    # :tag:
-    text = re.sub(r":([a-zA-Z0-9_]+):", replace_emoji, text)
-    # $tag$
-    text = re.sub(r"\$([a-zA-Z0-9_#,\(\)]+)\$", replace_style, text)
-
-    return text
 
 def _read_masked_input(mask_char: str) -> str:
     """Reads input with character masking, without standard terminal echo."""
@@ -187,10 +85,10 @@ class Write:
         markup: bool = True,
     ):
         """
-        :param text: Text
-        :param compose: Set style for text.
-        :param pos: Set position (x, y).
-        :param markup: If True, the :emoji: and $style$ markup will be processed.
+        :param text: The raw text string to be processed and rendered to the terminal.
+        :param compose: ANSI style or sequence of styles (Color, ColorBG, Style) applied to the entire text string.
+        :param pos: Optional (x, y) coordinates for precise terminal cursor positioning before writing.
+        :param markup: If True, parses inline markup (:emoji: tags and $style$ color codes) before rendering.
         """
         self.text = parse_markup(str(text)) if markup else str(text)
         self.compose = compose
@@ -250,11 +148,11 @@ class Read:
         type: str = "text",
     ):
         """
-        :param prompt: Prompt text.
-        :param compose: Set style for prompt text.
-        :param value_compose: Style for the input text and the value returned by Write.
-        :param pos: Position (x, y) for rendering the input field.
-        :param type: Input type ("text", "password", "pin", "hidden", "int").
+        :param prompt: Prompt text displayed before the user input field. Supports inline markup (:emoji: and $style$).
+        :param compose: ANSI style or sequence of styles (Color, ColorBG, Style) applied to the prompt label.
+        :param value_compose: ANSI style or sequence of styles applied to user input text and retained in the returned Write object.
+        :param pos: Optional (x, y) coordinates for precise terminal cursor positioning where the prompt starts.
+        :param type: Input rendering mode ("text", "password", "pin", "hidden", "int" / "number").
         """
         self.prompt = parse_markup(str(prompt))
         self.compose = compose

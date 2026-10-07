@@ -4,8 +4,11 @@
 
 """
 
+__all__ = ['Table']
+
 class Table:
-            
+
+    @staticmethod
     def createTable(
         data,
         *, 

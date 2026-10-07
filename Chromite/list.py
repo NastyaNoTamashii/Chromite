@@ -9,6 +9,7 @@ __all__ = ['List']
 from typing import List as PyList, Union, Optional, Tuple
 from .codes import move_cursor, ANSIElement
 from .formatting import BaseCodes
+from .io import parse_markup
 
 # Type Hint for styles: one element or list/tuple of elements
 StyleType = Union[ANSIElement, PyList[ANSIElement], Tuple[ANSIElement, ...]]
@@ -29,12 +30,12 @@ class List:
         pos: Optional[PosType] = None
     ):
         """
-        :param items: Items.
-        :param bullet: Set bullet for list.
-        :param ordered: The 'ordered: bool' parameter is used to switch between two types of lists: True - numbered list; False - pointed list.
-        :param compose: Set style for list.
-        :param bullet_compose: Set style for bullet.
-        :param pos: Set position (x, y).
+        :param items: A list of text strings or items to be rendered in the list.
+        :param bullet: Symbol used as a bullet marker for unordered lists (e.g. "•", "-", "x").
+        :param ordered: If True, renders a numbered list (1., 2., ...); if False, renders a bulleted list using 'bullet'.
+        :param compose: ANSI style or sequence of styles (Color, ColorBG, Style) applied to the list item text.
+        :param bullet_compose: ANSI style or sequence of styles applied specifically to the bullet/number markers.
+        :param pos: Optional (x, y) coordinates for precise terminal cursor positioning.
         """
         self.items = items
         self.bullet = bullet
@@ -57,8 +58,8 @@ class List:
                     b_style = str(self.bullet_compose)
                 prefix = f"{b_style}{prefix}{BaseCodes.RESET}"
 
-            # Apply the style to the text if 'compose' is provided.
-            item_text = str(item)
+            # Apply markup parsing and style to the text if 'compose' is provided.
+            item_text = parse_markup(str(item))
             if self.compose:
                 if isinstance(self.compose, (list, tuple)):
                     t_style = "".join(str(s) for s in self.compose)

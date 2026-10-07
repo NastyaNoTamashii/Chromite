@@ -1,3 +1,9 @@
+"""
+
+    Copyright (C) 2026 NastyaNoTamashii.
+
+"""
+
 from typing import Dict
 
 EMOJI_MAP: Dict[str, str] = {
