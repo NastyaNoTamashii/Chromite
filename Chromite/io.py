@@ -183,15 +183,16 @@ class Write:
         text: str, 
         *, 
         compose: StyleType = None, 
-        pos: Optional[PosType] = None
+        pos: Optional[PosType] = None,
+        markup: bool = True,
     ):
         """
         :param text: Text
         :param compose: Set style for text.
         :param pos: Set position (x, y).
+        :param markup: If True, the :emoji: and $style$ markup will be processed.
         """
-        self.text = str(text)
-        self.text = parse_markup(str(text))
+        self.text = parse_markup(str(text)) if markup else str(text)
         self.compose = compose
         self.pos = pos
 
@@ -208,26 +209,23 @@ class Write:
 
     def _text_processing(self) -> str:
         """Assembles and returns the styled string with position codes."""
-        if self.pos is not None:
-            x, y = self.pos
-            # Converting to 1-based terminal coordinates (1, 1 — top-left corner)
-            ansi_pos = move_cursor(max(1, x + 1), max(1, y + 1))
-            return f"{ansi_pos}{self.text}"
-        
+        text = self.text
         if self.compose:
             if isinstance(self.compose, ANSIElement):
-                self.text = f"{self.compose}{self.text}{BaseCodes.RESET}"
-            elif isinstance(self.compose, (list, tuple)):
-                ansi_sequence = "".join(str(comp) for comp in self.compose)
-                self.text = f"{ansi_sequence}{self.text}{BaseCodes.RESET}"
-            
-        return self.text
+                style = str(self.compose)
+            else:
+                style = "".join(str(c) for c in self.compose)
+            text = f"{style}{text}{BaseCodes.RESET}"
+
+        if self.pos is not None:
+            x, y = self.pos
+            text = f"{move_cursor(max(1, x + 1), max(1, y + 1))}{text}"
+
+        return text
 
     def flush(self) -> str:
         """Returns the processed string text."""
-        self.text = self._text_processing()
-
-        return self.text
+        return self._text_processing()
 
     def display(self) -> None:
         """Immediately outputs text to the terminal."""
@@ -324,11 +322,13 @@ class Read:
 
         elif self.type in ("int", "number"):
             while True:
-                raw = input(full_prompt)
-                if raw.strip().isdigit():
+                raw = input(full_prompt).strip()
+                try:
+                    int(raw)
                     return raw
-                sys.stdout.write(f"\033[1A\033[2K")
-                sys.stdout.flush()
+                except ValueError:
+                    sys.stdout.write("\033[1A\033[2K")
+                    sys.stdout.flush()
 
         else:
             return input(full_prompt)
@@ -341,7 +341,7 @@ class Read:
             sys.stdout.write(str(BaseCodes.RESET))
             sys.stdout.flush()
 
-        return Write(user_input, compose=self.value_compose)
+        return Write(user_input, compose=self.value_compose, markup=False)
 
     def __call__(self) -> Write:
         return self.execute()

@@ -13,7 +13,7 @@ from .formatting import BaseCodes
 # Type Hint for styles: one element or list/tuple of elements
 StyleType = Union[ANSIElement, PyList[ANSIElement], Tuple[ANSIElement, ...]]
 
-PosType = Tuple[int, int]  # (x, y) or (col, row)ы
+PosType = Tuple[int, int]  # (x, y) or (col, row)
 
 class List:
     __slots__ = ("items", "bullet", "ordered", "compose", "bullet_compose", "pos",)

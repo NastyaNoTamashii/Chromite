@@ -57,8 +57,11 @@ class Color(BaseCodes):
     def hex(hex: str) -> ANSIElement:
         """Returns the text color from the HEX palette."""
         hex = hex.lstrip('#')
-        rgb = tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
-        return make_ansi_rgb(rgb[0], rgb[1], rgb[2])
+        if len(hex) == 3:
+            hex = "".join(c * 2 for c in hex)
+        if len(hex) != 6: raise ValueError("HEX color must have 3 or 6 digits.")
+        r, g, b = (int(hex[i:i+2], 16) for i in (0, 2, 4))
+        return make_ansi_rgb(r, g, b)
     
     @staticmethod
     def x256(code: int) -> ANSIElement:
@@ -112,12 +115,16 @@ class ColorBG(BaseCodes):
             raise ValueError("256-color index must be between 0 and 255.")
         return make_ansi_rgb(r, g, b, bg = True)
     
+
     @staticmethod
     def hex(hex: str) -> ANSIElement:
         """Returns the text color from the HEX palette."""
         hex = hex.lstrip('#')
-        rgb = tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
-        return make_ansi_rgb(rgb[0], rgb[1], rgb[2], bg=True)
+        if len(hex) == 3:
+            hex = "".join(c * 2 for c in hex)
+        if len(hex) != 6: raise ValueError("HEX color must have 3 or 6 digits.")
+        r, g, b = (int(hex[i:i+2], 16) for i in (0, 2, 4))
+        return make_ansi_rgb(r, g, b, bg=True)
     
     @staticmethod
     def x256(code: int) -> ANSIElement:
