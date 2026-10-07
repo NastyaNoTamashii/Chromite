@@ -6,7 +6,7 @@
 <div align="center">
 
 [![GitHub release](https://img.shields.io/github/release/NastyaNoTamashii/Chromite.svg?style=for-the-badge)](https://github.com/NastyaNoTamashii/Chromite/releases/)
-[![GitHub license](https://img.shields.io/github/license/NastyaNoTamashii/Chromite.svg?style=for-the-badge)](https://github.com/NastyaNoTamashii/Chromite/blob/master/license)
+[![GitHub license](https://img.shields.io/github/license/NastyaNoTamashii/Chromite.svg?style=for-the-badge)](https://github.com/NastyaNoTamashii/Chromite/blob/main/LICENSE)
 [![Pypi downloads](https://img.shields.io/pypi/dm/Chromite?style=for-the-badge&color=pink)](https://pypi.org/project/Chromite/)
 [![Commit activity](https://img.shields.io/github/commit-activity/m/NastyaNoTamashii/Chromite?style=for-the-badge)](https://github.com/NastyaNoTamashii/Chromite/)
 [![Repo size](https://img.shields.io/github/repo-size/NastyaNoTamashii/Chromite?style=for-the-badge&color=orange)](https://GitHub.com/NastyaNoTamashii/Chromite/)
