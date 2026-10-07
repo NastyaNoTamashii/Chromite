@@ -59,7 +59,8 @@ class Color(BaseCodes):
         hex = hex.lstrip('#')
         if len(hex) == 3:
             hex = "".join(c * 2 for c in hex)
-        if len(hex) != 6: raise ValueError("HEX color must have 3 or 6 digits.")
+        if len(hex) != 6: 
+            raise ValueError("HEX color must have 3 or 6 digits.")
         r, g, b = (int(hex[i:i+2], 16) for i in (0, 2, 4))
         return make_ansi_rgb(r, g, b)
     
@@ -122,7 +123,8 @@ class ColorBG(BaseCodes):
         hex = hex.lstrip('#')
         if len(hex) == 3:
             hex = "".join(c * 2 for c in hex)
-        if len(hex) != 6: raise ValueError("HEX color must have 3 or 6 digits.")
+        if len(hex) != 6: 
+            raise ValueError("HEX color must have 3 or 6 digits.")
         r, g, b = (int(hex[i:i+2], 16) for i in (0, 2, 4))
         return make_ansi_rgb(r, g, b, bg=True)
     
