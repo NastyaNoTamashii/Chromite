@@ -35,6 +35,75 @@ cd Chromite
 pip install -e .
 ```
 
+## 🚀 Quick start
+
+```python
+from Chromite import Color, Style, Write
+
+Write("Hello, Chromite!", compose=[Color.Green, Style.Bold]).display()
+```
+
+## 🎨 Inline markup
+
+Use `$style$` for colors/styles and `:emoji:` for emoji right inside the text.
+`$reset$` clears everything.
+
+```python
+from Chromite import Write
+
+Write("$bold$Build passed$reset$ :white_check_mark: $hex#FFFF00$2 warnings$reset$ :warning:").display()
+Write("$bg_red$$white$ ERROR $reset$ disk is full").display()
+```
+
+## 🌈 Colors
+
+```python
+from Chromite import Color, ColorBG, Write
+
+Write("From HEX", compose=Color.hex("#ff5733")).display()
+Write("Red background", compose=ColorBG.Red).display()
+Write("256-color palette", compose=Color.x256(208)).display()
+```
+
+## 📋 Lists
+
+```python
+from Chromite import List, Color, Style
+
+List.numbered(
+    ["Install", "Import", "Enjoy"],
+    compose=Color.Cyan,
+    bullet_compose=Style.Bold,
+).display()
+
+List.pointed(["fast", "no dependencies"], bullet="→", bullet_compose=Color.Green).display()
+```
+
+## 📊 Tables
+
+```python
+from Chromite import Table
+
+data = [["Name", "Stars"], {"Chromite": "5", "Other": "10"}]
+print(Table.createTable(data, header_separator=True))
+```
+
+```
+    Name | Stars
+---------+------
+Chromite |     5
+   Other |    10
+```
+
+## ⌨️ Input
+
+```python
+from Chromite import Read, Color
+
+name = Read("Your name > ", compose=Color.Blue, value_compose=Color.LightBlue).execute()
+pin = Read("PIN > ", type="pin").execute()   # also: "password", "hidden", "int"
+print(f"Hi {name}!")
+```
 
 ---
 
