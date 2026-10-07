@@ -31,11 +31,11 @@ def make_ansi_x256(code: int, *, bg: bool = None) -> ANSIElement:
         return ANSIElement(f"{CSIX256BG}{code}m")
     return ANSIElement(f"{CSIX256}{code}m")
 
-def make_ansi_rgb(r: int, b: int, g: int, *, bg: bool = None) -> ANSIElement:
+def make_ansi_rgb(r: int, g: int, b: int, *, bg: bool = None) -> ANSIElement:
     """Make RGB code."""
     if bg is True:
         return ANSIElement(f"{CSIRGBBG}{r};{g};{b}m")
-    return ANSIElement(f"{CSIRGB}{r};{b};{g}m")
+    return ANSIElement(f"{CSIRGB}{r};{g};{b}m")
 
 def move_cursor(x: int, y: int) -> ANSIElement:
     """Moves the cursor to position (x, y) / (col, row). Numbering starts at 1, 1."""

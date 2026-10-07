@@ -12,5 +12,7 @@ Chromite.Write(f"\nHi {name}! :wave:").display()
 print('\n')
 
 Chromite.Write('Color from RGB\n', compose=Color.rgb(225, 0, 0)).display()
-Chromite.Write('Color from HEX\n', compose=Color.hex('#ff5733')).display()
+Chromite.Write('Color from HEX\n', compose=ColorBG.hex("#6aff00")).display()
 Chromite.Write('BG Color\n',       compose=ColorBG.DarkBlue).display()
+
+Chromite.Write('$hex#F54927$HEX!$reset$ and $rgb(32,19,214)$RGB!$reset$\n').display()

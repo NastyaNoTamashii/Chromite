@@ -47,7 +47,7 @@ class Color(BaseCodes):
     Purple       = make_ansi_rgb(128, 0  , 128)
 
     @staticmethod
-    def rgb(r: int, b: int, g: int) -> ANSIElement:
+    def rgb(r: int, g: int, b: int) -> ANSIElement:
         """Returns the text color from the rgb-color palette (red, blue, green)."""
         if any(not (0 <= x <= 255) for x in (r, g, b)):
             raise ValueError("256-color index must be between 0 and 255.")
@@ -106,7 +106,7 @@ class ColorBG(BaseCodes):
     Purple       = make_ansi_rgb(128, 0  , 128, bg=True)
 
     @staticmethod
-    def rgb(r: int, b: int, g: int) -> ANSIElement:
+    def rgb(r: int, g: int, b: int) -> ANSIElement:
         """Returns the text color from the rgb-color palette (red, blue, green)."""
         if any(not (0 <= x <= 255) for x in (r, g, b)):
             raise ValueError("256-color index must be between 0 and 255.")
@@ -117,7 +117,7 @@ class ColorBG(BaseCodes):
         """Returns the text color from the HEX palette."""
         hex = hex.lstrip('#')
         rgb = tuple(int(hex[i:i+2], 16) for i in (0, 2, 4))
-        return make_ansi_rgb(rgb[0], rgb[1], rgb[2], bg = True)
+        return make_ansi_rgb(rgb[0], rgb[1], rgb[2], bg=True)
     
     @staticmethod
     def x256(code: int) -> ANSIElement:
