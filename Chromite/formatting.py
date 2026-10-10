@@ -7,7 +7,7 @@
 import random
 from .codes import ANSIElement, make_ansi, make_ansi_x256, make_ansi_rgb
 
-__all__ = ['color', 'color_bg', 'style']
+__all__ = ['Color', 'ColorBG', 'Style']
 
 class BaseCodes:
     RESET = make_ansi(0)
@@ -151,7 +151,3 @@ class Style(BaseCodes):
     Hide      = make_ansi(8)
     Strike    = make_ansi(9)
     Regular   = make_ansi(22)
-    
-color = Color()
-color_bg = ColorBG()
-style = Style()

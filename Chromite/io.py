@@ -6,10 +6,10 @@
 
 __all__ = ['Write', 'Read', 'cInject', 'clear']
 
-import sys, re
+import sys
 from typing import Union, List, Tuple, Optional
 from .codes import ANSIElement, move_cursor, show_cursor
-from .formatting import BaseCodes, Color, ColorBG, Style
+from .formatting import BaseCodes
 from ._markup import parse_markup
 
 # Type Hint for styles: one element or list/tuple of elements
