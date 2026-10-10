@@ -84,15 +84,31 @@ List.pointed(["fast", "no dependencies"], bullet="→", bullet_compose=Color.Gre
 ```python
 from Chromite import Table
 
-data = [["Name", "Stars"], {"Chromite": "5", "Other": "10"}]
-print(Table.createTable(data, header_separator=True))
+table = Table(style = Chromite.TableStyle.Rounded)
+
+table.add_column("Name", compose=Color.Gold)
+contacts = table.add_column("Contacts :tada:")
+table.add_column("Email", parent=contacts)
+chats = table.add_column("Messengers", parent=contacts)
+table.add_column("Telegram", parent=chats)
+table.add_column("WhatsApp", parent=chats)
+table.add_column("Age", align="right")
+
+table.add_row("Oleg", "oleg@gmail.com", "@oleg", "+38(098)000-00-00", 25, compose=Color.Red)
+table.add_row("Natalka", "natalka@outlook.com", "@natalka", None, 31)
 ```
 
 ```
-    Name | Stars
----------+------
-Chromite |     5
-   Other |    10
+╭─────────┬────────────────────────────────────────────────────┬─────╮
+│         │                    Contacts 🎉                     │     │
+│         ├─────────────────────┬──────────────────────────────┤     │
+│  Name   │                     │          Messengers          │ Age │
+│         │        Email        ├──────────┬───────────────────┤     │
+│         │                     │ Telegram │     WhatsApp      │     │
+├─────────┼─────────────────────┼──────────┼───────────────────┼─────┤
+│ Oleg    │ oleg@gmail.com      │ @oleg    │ +38(098)000-00-00 │  25 │
+│ Natalka │ natalka@outlook.com │ @natalka │                   │  31 │
+╰─────────┴─────────────────────┴──────────┴───────────────────┴─────╯
 ```
 
 ## ⌨️ Input
