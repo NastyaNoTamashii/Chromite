@@ -322,4 +322,11 @@ class Table:
             lines.append(line)
         return "\n".join(lines)
 
-    __str__ = render
+    def flush(self) -> str:
+        return self.render()
+
+    def display(self) -> None:
+        print(self.flush())
+
+    def __str__(self) -> str:
+        return self.flush()

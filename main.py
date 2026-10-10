@@ -25,7 +25,7 @@ table.add_row("Oleg", "oleg@gmail.com", "@oleg", "+38(098)000-00-00", 25, compos
 table.add_row("Natalka", "natalka@outlook.com", "@natalka", None, 31)
 table.add_row(name, "yourmail@mail.com", f"@{name}", "+0(00)000-00-00", age, compose=[Color.LightBlue, Style.Underline])
 
-Chromite.Write(str(table)+'\n').display()
+table.display()
 
 Chromite.Write(f"\nHi {name}! :wave:").display()
 print('\n')
