@@ -96,6 +96,8 @@ table.add_column("Age", align="right")
 
 table.add_row("Oleg", "oleg@gmail.com", "@oleg", "+38(098)000-00-00", 25, compose=Color.Red)
 table.add_row("Natalka", "natalka@outlook.com", "@natalka", None, 31)
+
+table.display()
 ```
 
 ```
@@ -117,7 +119,8 @@ table.add_row("Natalka", "natalka@outlook.com", "@natalka", None, 31)
 from Chromite import Read, Color
 
 name = Read("Your name > ", compose=Color.Blue, value_compose=Color.LightBlue).execute()
-pin = Read("PIN > ", type="pin").execute()   # also: "password", "hidden", "int"
+pin = Read("PIN > ", type="pin").execute() # also: "password", "hidden", "int"
+
 print(f"Hi {name}!")
 ```
 
