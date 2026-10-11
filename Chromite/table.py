@@ -11,7 +11,7 @@ import unicodedata
 from dataclasses import dataclass, replace
 from typing import Union, List, Tuple
 from .codes import ANSIElement
-from .formatting import BaseCodes
+from .fmt import BaseCodes
 from ._markup import parse_markup
 
 # Type Hint for styles: one element or list/tuple of elements
@@ -184,7 +184,7 @@ class Table:
         :return: The column key (the same as 'key', or 'title' if 'key' was not given).
         :raises ValueError: If a column with this key already exists.
         :raises KeyError: If 'parent' does not match any existing column.
-         """
+        """
         key = title if key is None else key
         if key in self._cols:
             raise ValueError(f"The '{key}' column already exists—please specify a different key")

@@ -8,7 +8,7 @@ __all__ = ['List']
 
 from typing import List as PyList, Union, Optional, Tuple
 from .codes import ANSIElement, place, move_cursor
-from .formatting import BaseCodes
+from .fmt import BaseCodes
 from ._markup import parse_markup
 
 # Type Hint for styles: one element or list/tuple of elements

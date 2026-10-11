@@ -5,7 +5,7 @@
 """
 
 import re
-from .formatting import BaseCodes, Color, ColorBG, Style
+from .fmt import BaseCodes, Color, ColorBG, Style
 from ._emoji_map import EMOJI_MAP
 
 def _resolve_style_tag(tag_name: str) -> str:

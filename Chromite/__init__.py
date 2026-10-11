@@ -10,7 +10,7 @@ __license__ = "MIT"
 __copyright__ = "Copyright 2026-present NastyaNoTamashii"
 __version__ = "0.6.7"
 
-from .formatting import Color, Style, ColorBG
+from .fmt import Color, Style, ColorBG, link
 from .io import (
     Write, Read, clear, cInject
 )
@@ -18,4 +18,4 @@ from .io import (
 from .table import Table, TableStyle
 from .list import List
 
-__all__ = ["Write", "Read", "Color", "ColorBG", "Style", "Table", "TableStyle", "List", "clear", "cInject"]
+__all__ = ["Write", "Read", "Color", "ColorBG", "link", "Style", "Table", "TableStyle", "List", "clear", "cInject"]
