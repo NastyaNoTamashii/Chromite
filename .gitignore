@@ -1,6 +1,10 @@
 # Python cache
 __pycache__/
 
+# Python venv files
+.venv/
+.vscode/
+
 # Git files
 .git
 

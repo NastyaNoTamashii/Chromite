@@ -9,16 +9,14 @@ import os
 # Initialize ANSI support in Windows consoles.
 os.system("")
 
-CSI       = "\033["
-CSIX256   = "\033[38;5;" # "38;5;" — To activate the 256-color palette mode (8-bit).
-CSIX256BG = "\033[48;5;" # "48;5;" — To activate the 256-color background palette mode (8-bit).
-CSIRGB    = "\033[38;2;" # "48;5;" — To activate the True-color pallete mode (RGB).
-CSIRGBBG  = "\033[48;2;" # "48;5;" — To activate the True-color background pallete mode (RGB).
+CSI       = "\x1b["
+CSIX256   = "\x1b[38;5;" # "38;5;" — To activate the 256-color palette mode (8-bit).
+CSIX256BG = "\x1b[48;5;" # "48;5;" — To activate the 256-color background palette mode (8-bit).
+CSIRGB    = "\x1b[38;2;" # "48;5;" — To activate the True-color pallete mode (RGB).
+CSIRGBBG  = "\x1b[48;2;" # "48;5;" — To activate the True-color background pallete mode (RGB).
 
 class ANSIElement(str):
-    """
-    Custom string for ANSI codes.
-    """
+    """Custom string for ANSI codes."""
     pass
 
 def make_ansi(code: int) -> ANSIElement:
@@ -40,6 +38,20 @@ def make_ansi_rgb(r: int, g: int, b: int, *, bg: bool = None) -> ANSIElement:
 def move_cursor(x: int, y: int) -> ANSIElement:
     """Moves the cursor to position (x, y) / (col, row). Numbering starts at 1, 1."""
     return ANSIElement(f"{CSI}{y};{x}H")
+
+def place(text: str, pos) -> str:
+    """
+    Puts 'text' at pos=(x, y), numbering from 0, 0.
+    Every line of a multi-line text gets its own cursor move, so the x offset
+    is kept after '\\n' and the lines do not overwrite each other.
+    """
+    if pos is None:
+        return text
+    x, y = pos
+    return "\n".join(
+        f"{move_cursor(max(1, x + 1), max(1, y + 1 + i))}{line}"
+        for i, line in enumerate(text.split("\n"))
+    )
 
 def hide_cursor() -> ANSIElement:
     """Hides the cursor."""

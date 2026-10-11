@@ -38,20 +38,20 @@ _RESET = re.compile(r"\x1b\[0?m|" + re.escape(str(BaseCodes.RESET)))
 # Table styles
 @dataclass(frozen=True)
 class _Style:
-    h: str = "─"       # Horizontal line
-    v: str = "│"       # Vertical line
-    tl: str = "┌"      # Corner top-left
-    tr: str = "┐"      # Corner top-right
-    bl: str = "└"      # Corner bottom-left
-    br: str = "┘"      # Corner bottom-right
-    down: str = "┬"    # Joint down
-    up: str = "┴"      # Joint top
-    right: str = "├"   # Joint right
-    left: str = "┤"    # Joint left
-    cross: str = "┼"   # Cross line
-    top_h: str | None = None     # Top border line (None — same as h)
-    head_h: str | None = None    # Line under the header
-    bottom_h: str | None = None  # Lower boundary line
+    h: str = "─"                # Horizontal line
+    v: str = "│"                # Vertical line
+    tl: str = "┌"               # Corner top-left
+    tr: str = "┐"               # Corner top-right
+    bl: str = "└"               # Corner bottom-left
+    br: str = "┘"               # Corner bottom-right
+    down: str = "┬"             # Joint down
+    up: str = "┴"               # Joint top
+    right: str = "├"            # Joint right
+    left: str = "┤"             # Joint left
+    cross: str = "┼"            # Cross line
+    top_h: str | None = None    # Top border line (None — same as h)
+    head_h: str | None = None   # Line under the header
+    bottom_h: str | None = None # Lower boundary line
 
     def copy(self, **changes) -> "Style":
         """Copy the style with changes: ROUNDED.copy(h="=")"""
@@ -140,9 +140,11 @@ class _Col:
         self.title, self.key, self.align, self.children = title, key, align, []
 
 class Table:
+    __slots__ = ("style", "compose", "padding", "row_lines", "_cols", "_roots", "_rows",)
+
     def __init__(
         self,
-        style = TableStyle.Single,
+        style: TableStyle = TableStyle.Single,
         compose: StyleType = None,
         padding = 1,
         row_lines = False,
@@ -163,14 +165,26 @@ class Table:
 
     def add_column(self, title, compose: StyleType = None, key=None, parent=None, align="left"):
         """
-        Adds a column and returns its key.
+        Adds a column to the table and returns its key.
 
-        :param title: 
-        :param compose: ANSI style or sequence of styles (Color, ColorBG, Style) applied to the entire text string.
-        :param key: 
-        :param parent: 
-        :param align: 
-        """
+        Columns can be nested: a column with children becomes a group header
+        spanning all of them, and the data cells belong to the lowest-level columns.
+
+        >>> table.add_column("Name")
+        >>> table.add_column("City", align="right")
+        >>> table.add_column("Contacts")                       # group header
+        >>> table.add_column("Email", parent="Contacts")
+        >>> table.add_column("Phone", parent="Contacts", key="phone")
+
+        :param title: Header text. Supports Chromite markup (e.g. "$bold$Name").
+        :param compose: ANSI style or sequence of styles (Color, ColorBG, Style) applied to the header text.
+        :param key: Unique column identifier used to address it in rows given as dicts and in 'parent'. Defaults to 'title'.
+        :param parent: Key of an existing column to nest this one under, as a sub-column of a group header. If None, the column is top-level.
+        :param align: Alignment of the cell contents: "left", "right" or "center". Header text is always centered.
+        :return: The column key (the same as 'key', or 'title' if 'key' was not given).
+        :raises ValueError: If a column with this key already exists.
+        :raises KeyError: If 'parent' does not match any existing column.
+         """
         key = title if key is None else key
         if key in self._cols:
             raise ValueError(f"The '{key}' column already exists—please specify a different key")
@@ -183,10 +197,28 @@ class Table:
 
     def add_row(self, *values, compose: StyleType = None):
         """
-        >>> add_row("Nastiya", 18)
-        >>> add_row({"name": "Nastiya"}) # By column key.
+        Adds a row to the table and returns the table itself, so calls can be chained.
 
-        :param compose: ANSI style or sequence of styles (Color, ColorBG, Style) applied to the entire text string.
+        A row can be given in two ways:
+        - positionally, one value per column in left-to-right order
+        (for nested columns, the lowest-level columns are counted);
+        - as a single dict, where keys are column keys.
+
+        >>> table.add_row("Nastiya", "Odesa", 18)
+        >>> table.add_row({"Name": "Nastiya", "Age": 18})   # By column key.
+        >>> table.add_row("Nastiya").add_row("Olya")        # Chaining.
+
+        Missing values are shown as empty cells: fewer positional values than
+        columns, a key absent from the dict, or None. Line breaks inside a value
+        are replaced with spaces. Values support Chromite markup.
+
+        :param values: The cell values (any type, converted to str), or a single dict {column key: value}.
+        :param compose: ANSI style or sequence of styles (Color, ColorBG, Style) applied to every value in this row.
+        :return: The table itself.
+
+        Note: more positional values than columns raises ValueError when the table
+        is rendered, not when the row is added. Dict keys that match no column are
+        ignored.
         """
         def style(v):
             return v if v is None else _prepare(v, compose)
@@ -200,13 +232,18 @@ class Table:
 
     def add_rows(self, rows, compose: StyleType = None):
         """
-        >>> add_rows(("Olya", 19), ["Nastiya", "Odesa", 18])
-        >>> add_rows([
-                {"Name": "Veronika", "City": "Kyiv"},
-                {"Name": "Nastiya", "City": "Odesa"}
-            ])
+        Adds several rows at once. Each row is handled like in add_row(): a
+        list/tuple of values (one per column) or a dict {column key: value}.
+        Both kinds can be mixed in one call.
 
-        :param compose: ANSI style or sequence of styles (Color, ColorBG, Style) applied to the entire text string.
+        >>> table.add_rows([("Olya", "Kyiv", 19), ["Nastiya", "Odesa", 18]])
+        >>> table.add_rows([
+        ...     {"Name": "Veronika", "City": "Kyiv"},
+        ...     {"Name": "Nastiya", "City": "Odesa"},
+        ... ])
+
+        :param rows: An iterable of rows (lists, tuples or dicts).
+        :param compose: ANSI style or sequence of styles (Color, ColorBG, Style) applied to every value in every added row.
         """
         for r in rows:
             if isinstance(r, dict):
@@ -323,10 +360,15 @@ class Table:
         return "\n".join(lines)
 
     def flush(self) -> str:
+        """Returns the finished table as a string, with ANSI styles and line breaks."""
         return self.render()
 
     def display(self) -> None:
+        """Prints the table to the terminal."""
         print(self.flush())
 
     def __str__(self) -> str:
         return self.flush()
+    
+    def __call__(self) -> None:
+        return self.display()

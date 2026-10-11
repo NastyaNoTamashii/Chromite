@@ -9,6 +9,12 @@ from .codes import ANSIElement, make_ansi, make_ansi_x256, make_ansi_rgb
 
 __all__ = ['Color', 'ColorBG', 'Style']
 
+class classproperty:
+    def __init__(self, f):
+        self.f = f
+    def __get__(self, obj, owner):
+        return self.f(owner)
+
 class BaseCodes:
     RESET = make_ansi(0)
 
@@ -48,7 +54,7 @@ class Color(BaseCodes):
 
     @staticmethod
     def rgb(r: int, g: int, b: int) -> ANSIElement:
-        """Returns the text color from the rgb-color palette (red, blue, green)."""
+        """Returns the text color from the rgb-color palette (red, green, blue)."""
         if any(not (0 <= x <= 255) for x in (r, g, b)):
             raise ValueError("256-color index must be between 0 and 255.")
         return make_ansi_rgb(r, g, b)
@@ -71,7 +77,7 @@ class Color(BaseCodes):
             raise ValueError("256-color index must be between 0 and 255.")
         return make_ansi_x256(f"{code}")
     
-    @property
+    @classproperty
     def Random(self) -> ANSIElement:
         """Returns a random text color each time."""
         return make_ansi_x256(random.randint(0, 255))
@@ -111,7 +117,7 @@ class ColorBG(BaseCodes):
 
     @staticmethod
     def rgb(r: int, g: int, b: int) -> ANSIElement:
-        """Returns the text color from the rgb-color palette (red, blue, green)."""
+        """Returns the text color from the rgb-color palette (red, green, blue)."""
         if any(not (0 <= x <= 255) for x in (r, g, b)):
             raise ValueError("256-color index must be between 0 and 255.")
         return make_ansi_rgb(r, g, b, bg = True)
@@ -135,7 +141,7 @@ class ColorBG(BaseCodes):
             raise ValueError("256-color index must be between 0 and 255.")
         return make_ansi_x256(f"{code}", bg = True)
 
-    @property
+    @classproperty
     def Random(self) -> ANSIElement:
         """Returns a random background color each time."""
         return make_ansi_x256(random.randint(0, 255), bg = True)

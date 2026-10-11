@@ -8,7 +8,7 @@ __all__ = ['Write', 'Read', 'cInject', 'clear']
 
 import sys
 from typing import Union, List, Tuple, Optional
-from .codes import ANSIElement, move_cursor, show_cursor
+from .codes import ANSIElement, place, move_cursor, show_cursor
 from .formatting import BaseCodes
 from ._markup import parse_markup
 
@@ -37,14 +37,12 @@ def _read_masked_input(mask_char: str) -> str:
             elif ch == b"\x08":  # Backspace
                 if buf:
                     buf.pop()
-                    sys.stdout.write("\b \b")
-                    sys.stdout.flush()
+                    print("\b \b", end="", flush=True)
             elif ch not in (b"\x00", b"\xe0"):
                 try:
                     char_str = ch.decode("utf-8")
                     buf.append(char_str)
-                    sys.stdout.write(mask_char)
-                    sys.stdout.flush()
+                    print(mask_char, end="", flush=True)
                 except UnicodeDecodeError:
                     pass
         else:
@@ -62,14 +60,12 @@ def _read_masked_input(mask_char: str) -> str:
             elif ch in ("\x7f", "\x08"):  # Backspace
                 if buf:
                     buf.pop()
-                    sys.stdout.write("\b \b")
-                    sys.stdout.flush()
+                    print("\b \b", end="", flush=True)
             elif ch == "\x03":  # Ctrl+C
                 raise KeyboardInterrupt
             else:
                 buf.append(ch)
-                sys.stdout.write(mask_char)
-                sys.stdout.flush()
+                print(mask_char, end="", flush=True)
 
     return "".join(buf)
 
@@ -104,7 +100,7 @@ class Write:
         if isinstance(compose, (list, tuple)) and all(isinstance(comp, ANSIElement) for comp in compose):
             return
         raise TypeError("The 'compose' component must have a Chromite object. (Color, ColorBG, Style etc.)")
-
+    
     def _text_processing(self) -> str:
         """Assembles and returns the styled string with position codes."""
         text = self.text
@@ -115,18 +111,14 @@ class Write:
                 style = "".join(str(c) for c in self.compose)
             text = f"{style}{text}{BaseCodes.RESET}"
 
-        if self.pos is not None:
-            x, y = self.pos
-            text = f"{move_cursor(max(1, x + 1), max(1, y + 1))}{text}"
-
-        return text
+        return place(text, self.pos)
 
     def flush(self) -> str:
-        """Returns the processed string text."""
+        """Returns the finished text as a string, with the style (compose) and the cursor position (pos) applied. Nothing is printed. Calling it several times gives the same result."""
         return self._text_processing()
 
     def display(self) -> None:
-        """Immediately outputs text to the terminal."""
+        """Prints the finished text to the terminal right away, without a trailing line break, so the next output continues on the same line."""
         print(self.flush(), end="", flush=True)
 
     def __str__(self) -> str:
@@ -185,11 +177,6 @@ class Read:
         """Assembles an ANSI string for the prompt and cursor position."""
         formatted_prompt = self._input_style()
         
-        if self.pos is not None:
-            x, y = self.pos
-            ansi_pos = move_cursor(max(1, x + 1), max(1, y + 1))
-            formatted_prompt = f"{ansi_pos}{formatted_prompt}"
-        
         input_ansi_start = ""
         if self.value_compose:
             if isinstance(self.value_compose, ANSIElement):
@@ -197,25 +184,22 @@ class Read:
             elif isinstance(self.value_compose, (list, tuple)):
                 input_ansi_start = "".join(str(s) for s in self.value_compose)
 
-        return f"{show_cursor()}{formatted_prompt}{input_ansi_start}"
+        return place(f"{show_cursor()}{formatted_prompt}{input_ansi_start}", self.pos)
 
     def _input_type(self) -> str:
         """Processing of input text based on the specified input data type. (password, pin, int etc.)."""
         full_prompt = self._prepare_prompt()
 
         if self.type == "password":
-            sys.stdout.write(full_prompt)
-            sys.stdout.flush()
+            print(full_prompt, end="", flush=True)
             return _read_masked_input(mask_char='*')
 
         elif self.type == "pin":
-            sys.stdout.write(full_prompt)
-            sys.stdout.flush()
+            print(full_prompt, end="", flush=True)
             return _read_masked_input(mask_char='•')
 
         elif self.type == "hidden":
-            sys.stdout.write(full_prompt)
-            sys.stdout.flush()
+            print(full_prompt, end="", flush=True)
             return _read_masked_input(mask_char="")
 
         elif self.type in ("int", "number"):
@@ -225,8 +209,7 @@ class Read:
                     int(raw)
                     return raw
                 except ValueError:
-                    sys.stdout.write("\033[1A\033[2K")
-                    sys.stdout.flush()
+                    print("\x1b[1A\x1b[2K", end="", flush=True)
 
         else:
             return input(full_prompt)
@@ -236,8 +219,7 @@ class Read:
         try:
             user_input = self._input_type()
         finally:
-            sys.stdout.write(str(BaseCodes.RESET))
-            sys.stdout.flush()
+            print(str(BaseCodes.RESET), end="", flush=True)
 
         return Write(user_input, compose=self.value_compose, markup=False)
 
@@ -249,4 +231,4 @@ def cInject(text: str, compose: StyleType) -> str:
 
 def clear() -> None:
     """Clears the terminal screen."""
-    print('\x1b[2J\x1b[H')
+    print('\x1b[2J\x1b[H', end="", flush=True)

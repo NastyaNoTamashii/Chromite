@@ -7,9 +7,9 @@
 __all__ = ['List']
 
 from typing import List as PyList, Union, Optional, Tuple
-from .codes import move_cursor, ANSIElement
+from .codes import ANSIElement, place, move_cursor
 from .formatting import BaseCodes
-from .io import parse_markup
+from ._markup import parse_markup
 
 # Type Hint for styles: one element or list/tuple of elements
 StyleType = Union[ANSIElement, PyList[ANSIElement], Tuple[ANSIElement, ...]]
@@ -45,6 +45,7 @@ class List:
         self.pos = pos
 
     def flush(self) -> str:
+        """Returns the finished list as a single string: markers, item text with markup and styles applied, items separated by line breaks, and cursor positioning if pos is set."""
         lines = []
         for index, item in enumerate(self.items):
             # Specify the marker (number or bullet).
@@ -69,22 +70,7 @@ class List:
 
             lines.append(f"{prefix} {item_text}")
 
-        res = "\n".join(lines)
-
-        # Position support pos=(x, y).
-        if self.pos is not None:
-            x, y = self.pos
-            ansi_pos = move_cursor(max(1, x + 1), max(1, y + 1))
-            # When positioning a multi-line list, we offset each line or use an initial cursor move.
-            res = f"{ansi_pos}" + res.replace("\n", f"\n{ansi_pos}")
-
-        return res
-
-    def display(self) -> None:
-        print(self.flush())
-
-    def __str__(self) -> str:
-        return self.flush()
+        return place("\n".join(lines), self.pos)
 
     # Classmethods.
     @classmethod
@@ -94,3 +80,13 @@ class List:
     @classmethod
     def numbered(cls, items: PyList[str], **kwargs) -> "List":
         return cls(items, ordered=True, **kwargs)
+
+    def display(self) -> None:
+        """Prints the finished list to the terminal, followed by a line break."""
+        print(self.flush())
+
+    def __str__(self) -> str:
+        return self.flush()
+    
+    def __call__(self) -> None:
+        return self.display()
