@@ -17,6 +17,10 @@ from .io import (
 
 from .table import Table, TableStyle
 from .list import List
-from .powerline import Powerline, Segment
+from .powerline import Powerline, Segment, Cap
 
-__all__ = ["Write", "Read", "Color", "ColorBG", "link", "Style", "Table", "TableStyle", "List", "Powerline", "Segment", "clear", "cInject"]
+__all__ = [
+    "Write", "Read", "Color", "ColorBG", "link", "Style",
+    "Table", "TableStyle", "List", "Powerline", "Segment", "Cap",
+    "clear", "cInject"
+]

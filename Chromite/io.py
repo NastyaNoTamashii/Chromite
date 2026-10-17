@@ -27,46 +27,51 @@ except ImportError:
 
 def _read_masked_input(mask_char: str) -> str:
     """Reads input with character masking, without standard terminal echo."""
+    if not sys.stdin.isatty():
+        return sys.stdin.readline().rstrip("\n")
     buf = []
-    while True:
-        if WINDOWS:
-            ch = msvcrt.getch()
-            if ch in (b"\r", b"\n"):
-                print()
-                break
-            elif ch == b"\x08":  # Backspace
-                if buf:
-                    buf.pop()
-                    print("\b \b", end="", flush=True)
-            elif ch not in (b"\x00", b"\xe0"):
-                try:
-                    char_str = ch.decode("utf-8")
-                    buf.append(char_str)
-                    print(mask_char, end="", flush=True)
-                except UnicodeDecodeError:
-                    pass
-        else:
-            fd = sys.stdin.fileno()
-            old_settings = termios.tcgetattr(fd)
-            try:
-                tty.setraw(fd)
-                ch = sys.stdin.read(1)
-            finally:
-                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
+    def erase():
+        if mask_char:
+            print("\b \b", end="", flush=True)
+
+    def add(ch):
+        buf.append(ch)
+        if mask_char:
+            print(mask_char, end="", flush=True)
+
+    if WINDOWS:
+        while True:
+            ch = msvcrt.getwch()
             if ch in ("\r", "\n"):
-                print()
-                break
-            elif ch in ("\x7f", "\x08"):  # Backspace
-                if buf:
-                    buf.pop()
-                    print("\b \b", end="", flush=True)
-            elif ch == "\x03":  # Ctrl+C
+                print(); break
+            if ch == "\x03": # Ctrl+C
                 raise KeyboardInterrupt
-            else:
-                buf.append(ch)
-                print(mask_char, end="", flush=True)
-
+            if ch in ("\x00", "\xe0"):
+                msvcrt.getwch() # Second arrow key/F key code.
+                continue
+            if ch == "\x08": # Backspace
+                if buf: buf.pop(); erase()
+            elif ch.isprintable():
+                add(ch)
+    else:
+        fd = sys.stdin.fileno()
+        old = tty.setcbreak(fd, termios.TCSADRAIN)
+        try:
+            while True:
+                ch = sys.stdin.read(1)
+                if ch in ("\r", "\n"):
+                    print(); break
+                if ch in ("\x7f", "\x08"): # Backspace
+                    if buf: buf.pop(); erase()
+                elif ch == "\x1b": # Arrows: \x1b[A, \x1b[3~ ...
+                    if sys.stdin.read(1) == "[":
+                        while not "@" <= sys.stdin.read(1) <= "~":
+                            pass
+                elif ch.isprintable():
+                    add(ch)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
     return "".join(buf)
 
 class Write:

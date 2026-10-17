@@ -12,28 +12,40 @@ os.system("")
 CSI       = "\x1b["
 CSIX256   = "\x1b[38;5;" # "38;5;" — To activate the 256-color palette mode (8-bit).
 CSIX256BG = "\x1b[48;5;" # "48;5;" — To activate the 256-color background palette mode (8-bit).
-CSIRGB    = "\x1b[38;2;" # "48;5;" — To activate the True-color pallete mode (RGB).
+CSIRGB    = "\x1b[38;2;" # "38;5;" — To activate the True-color pallete mode (RGB).
 CSIRGBBG  = "\x1b[48;2;" # "48;5;" — To activate the True-color background pallete mode (RGB).
 
 class ANSIElement(str):
     """Custom string for ANSI codes."""
-    pass
+    kind = "style" # "fg" | "bg" | "style"
+    fg_twin = None # For bg: the same color, but as the text color.
+    def __new__(cls, value, kind="style", fg_twin=None):
+        obj = super().__new__(cls, value)
+        obj.kind, obj.fg_twin = kind, fg_twin
+        return obj
 
 def make_ansi(code: int) -> ANSIElement:
     """Make ANSI code."""
-    return ANSIElement(f"{CSI}{code}m")
+    fg = ANSIElement(f"{CSI}{code}m", "fg")
+    return ANSIElement(f"{CSI}{code}m", "bg", fg)
 
 def make_ansi_x256(code: int, *, bg: bool = None) -> ANSIElement:
     """Make x256 ANSI code (8-bit)."""
-    if bg is True:
-        return ANSIElement(f"{CSIX256BG}{code}m")
-    return ANSIElement(f"{CSIX256}{code}m")
+    fg = ANSIElement(f"{CSIX256}{code}m", "fg")
+    return ANSIElement(f"{CSIX256BG}{code}m", "bg", fg) if bg else fg
 
 def make_ansi_rgb(r: int, g: int, b: int, *, bg: bool = None) -> ANSIElement:
     """Make RGB code."""
-    if bg is True:
-        return ANSIElement(f"{CSIRGBBG}{r};{g};{b}m")
-    return ANSIElement(f"{CSIRGB}{r};{g};{b}m")
+    fg = ANSIElement(f"{CSIRGB}{r};{g};{b}m", "fg")
+    return ANSIElement(f"{CSIRGBBG}{r};{g};{b}m", "bg", fg) if bg else fg
+
+def compose_to_ansi(compose) -> str:
+    """ANSI sequence for 'compose': one element, a list/tuple of elements or None (-> empty string)."""
+    if not compose:
+        return ""
+    if isinstance(compose, (list, tuple)):
+        return "".join(str(s) for s in compose)
+    return str(compose)
 
 def move_cursor(x: int, y: int) -> ANSIElement:
     """Moves the cursor to position (x, y) / (col, row). Numbering starts at 1, 1."""

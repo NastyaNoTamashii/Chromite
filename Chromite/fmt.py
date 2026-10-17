@@ -122,7 +122,6 @@ class ColorBG(BaseCodes):
             raise ValueError("256-color index must be between 0 and 255.")
         return make_ansi_rgb(r, g, b, bg = True)
     
-
     @staticmethod
     def hex(hex: str) -> ANSIElement:
         """Returns the text color from the HEX palette."""

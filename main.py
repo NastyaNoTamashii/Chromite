@@ -1,13 +1,15 @@
 import Chromite
 from Chromite import Color, ColorBG, Style, Table
-from Chromite.powerline import Powerline, Segment, Caps
+from Chromite.powerline import Powerline, Segment, Cap
+
+import rich
 
 Chromite.clear()
 
 Chromite.Write("$red$Welcome! :tada:$reset$", pos=(24, 1)).display()
 print('\n\n')
 
-name = Chromite.Read("Your name > ", compose=Color.Green, value_compose=Color.LightBlue).execute()
+name = Chromite.Read("Your name > ", compose=Color.Green, value_compose=Color.LightBlue, type='hidden').execute()
 age = Chromite.Read("Your age > ", compose=Color.Green, value_compose=Color.LightBlue).execute()
 
 print('')
@@ -19,14 +21,14 @@ def make_powerline():
     powerline_Chromite.add(Segment(
         ":crystal_ball: Chromite", 
         compose=[Color.White, ColorBG.hex("#5f00d7")],
-        cap_left=Caps.ROUND_LEFT,
-        cap_right=Caps.ROUND_RIGHT
+        cap_left=Cap.ROUND_LEFT,
+        cap_right=Cap.ROUND_RIGHT
     ))
 
     powerline_builder.add(Segment(
         f"\uf07b C:\\Chromite", # Needed NERD FONT for icon!
         compose=[Color.Black, ColorBG.hex("#00d7ff")],
-        cap_left=Caps.ROUND_LEFT
+        cap_left=Cap.ROUND_LEFT
     ))
 
     powerline_builder.add(Segment(
