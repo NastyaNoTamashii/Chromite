@@ -124,6 +124,39 @@ pin = Read("PIN > ", type="pin").execute() # also: "password", "hidden", "int"
 print(f"Hi {name}!")
 ```
 
+## ⚡ Powerlines
+
+```python
+from Chromite import Color, ColorBG
+from Chromite.powerline import Powerline, Segment, Caps
+
+def make_powerline():
+    powerline_Chromite = Powerline()
+    powerline_builder = Powerline()
+
+    powerline_Chromite.add(Segment(
+        ":crystal_ball: Chromite", 
+        compose=[Color.White, ColorBG.hex("#5f00d7")],
+        cap_left=Caps.ROUND_LEFT,
+        cap_right=Caps.ROUND_RIGHT
+    ))
+
+    powerline_builder.add(Segment(
+        f"\uf07b C:\\Chromite", # Needed NERD FONT for icon!
+        compose=[Color.Black, ColorBG.hex("#00d7ff")],
+        cap_left=Caps.ROUND_LEFT
+    ))
+
+    powerline_builder.add(Segment(
+        "\ue725 main.py", # Needed NERD FONT for icon!
+        compose=[Color.Black, ColorBG.Yellow]
+    ))
+
+    return powerline_Chromite.flush() + powerline_builder.flush()
+
+input(make_powerline())
+```
+
 ---
 
 <a href="https://github.com/NastyaNoTamashii/Chromite/graphs/contributors">
