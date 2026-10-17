@@ -10,8 +10,8 @@
 [![Pypi downloads](https://img.shields.io/pypi/dm/Chromite?style=for-the-badge&color=pink)](https://pypi.org/project/Chromite/)
 [![Commit activity](https://img.shields.io/github/commit-activity/m/NastyaNoTamashii/Chromite?style=for-the-badge)](https://github.com/NastyaNoTamashii/Chromite/)
 [![Repo size](https://img.shields.io/github/repo-size/NastyaNoTamashii/Chromite?style=for-the-badge&color=orange)](https://GitHub.com/NastyaNoTamashii/Chromite/)
+[![Python version](https://img.shields.io/pypi/pyversions/Chromite?style=for-the-badge)](https://pypi.org/project/Chromite/)
 [![GitHub All Releases](https://img.shields.io/github/downloads/NastyaNoTamashii/Chromite/total?style=for-the-badge)](https://GitHub.com/NastyaNoTamashii/Chromite/releases/)
-[![GitHub All Releases](https://img.shields.io/pypi/pyversions/Chromite?style=for-the-badge)](https://GitHub.com/NastyaNoTamashii/Chromite/releases/)
 
 </div>
 
