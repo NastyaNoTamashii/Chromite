@@ -82,7 +82,7 @@ List.pointed(["fast", "no dependencies"], bullet="→", bullet_compose=Color.Gre
 ## 📊 Tables
 
 ```python
-from Chromite import Table
+from Chromite import Table, Color
 
 table = Table(style = Chromite.TableStyle.Rounded)
 
