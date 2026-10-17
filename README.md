@@ -11,6 +11,7 @@
 [![Commit activity](https://img.shields.io/github/commit-activity/m/NastyaNoTamashii/Chromite?style=for-the-badge)](https://github.com/NastyaNoTamashii/Chromite/)
 [![Repo size](https://img.shields.io/github/repo-size/NastyaNoTamashii/Chromite?style=for-the-badge&color=orange)](https://GitHub.com/NastyaNoTamashii/Chromite/)
 [![GitHub All Releases](https://img.shields.io/github/downloads/NastyaNoTamashii/Chromite/total?style=for-the-badge)](https://GitHub.com/NastyaNoTamashii/Chromite/releases/)
+[![GitHub All Releases](https://img.shields.io/pypi/pyversions/Chromite?style=for-the-badge)](https://GitHub.com/NastyaNoTamashii/Chromite/releases/)
 
 </div>
 
