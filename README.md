@@ -157,6 +157,10 @@ def make_powerline():
 input(make_powerline())
 ```
 
+<a href="https://github.com/NastyaNoTamashii/Chromite">
+  <img src="https://github.com/NastyaNoTamashii/Chromite/blob/main/assets/powerlines-example.png" />
+</a>
+
 ---
 
 <a href="https://github.com/NastyaNoTamashii/Chromite/graphs/contributors">
