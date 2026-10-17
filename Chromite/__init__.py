@@ -8,7 +8,7 @@ __title__ = "Chromite"
 __author__ = "NastyaNoTamashii"
 __license__ = "MIT"
 __copyright__ = "Copyright 2026-present NastyaNoTamashii"
-__version__ = "0.6.7"
+__version__ = "0.6.8"
 
 from .fmt import Color, Style, ColorBG, link
 from .io import (
@@ -17,5 +17,6 @@ from .io import (
 
 from .table import Table, TableStyle
 from .list import List
+from .powerline import Powerline, Segment
 
-__all__ = ["Write", "Read", "Color", "ColorBG", "link", "Style", "Table", "TableStyle", "List", "clear", "cInject"]
+__all__ = ["Write", "Read", "Color", "ColorBG", "link", "Style", "Table", "TableStyle", "List", "Powerline", "Segment", "clear", "cInject"]

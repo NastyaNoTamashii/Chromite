@@ -1,5 +1,6 @@
 import Chromite
 from Chromite import Color, ColorBG, Style, Table
+from Chromite.powerline import Powerline, Segment, Caps
 
 Chromite.clear()
 
@@ -9,7 +10,34 @@ print('\n\n')
 name = Chromite.Read("Your name > ", compose=Color.Green, value_compose=Color.LightBlue).execute()
 age = Chromite.Read("Your age > ", compose=Color.Green, value_compose=Color.LightBlue).execute()
 
-print('\n')
+print('')
+
+def make_powerline():
+    powerline_Chromite = Powerline()
+    powerline_builder = Powerline()
+
+    powerline_Chromite.add(Segment(
+        ":crystal_ball: Chromite", 
+        compose=[Color.White, ColorBG.hex("#5f00d7")],
+        cap_left=Caps.ROUND_LEFT,
+        cap_right=Caps.ROUND_RIGHT
+    ))
+
+    powerline_builder.add(Segment(
+        f"\uf07b C:\\Chromite", # Needed NERD FONT for icon!
+        compose=[Color.Black, ColorBG.hex("#00d7ff")],
+        cap_left=Caps.ROUND_LEFT
+    ))
+
+    powerline_builder.add(Segment(
+        "\ue725 main.py", # Needed NERD FONT for icon!
+        compose=[Color.Black, ColorBG.Yellow]
+    ))
+
+    return powerline_Chromite.flush() + powerline_builder.flush()
+
+print(make_powerline() + "Some text...")
+print('')
 
 table = Table(style = Chromite.TableStyle.Rounded)
 
