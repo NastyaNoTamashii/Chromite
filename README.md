@@ -128,7 +128,7 @@ print(f"Hi {name}!")
 
 ```python
 from Chromite import Color, ColorBG
-from Chromite.powerline import Powerline, Segment, Caps
+from Chromite.powerline import Powerline, Segment, Cap
 
 def make_powerline():
     powerline_Chromite = Powerline()
@@ -137,14 +137,14 @@ def make_powerline():
     powerline_Chromite.add(Segment(
         ":crystal_ball: Chromite", 
         compose=[Color.White, ColorBG.hex("#5f00d7")],
-        cap_left=Caps.ROUND_LEFT,
-        cap_right=Caps.ROUND_RIGHT
+        cap_left=Cap.ROUND_LEFT,
+        cap_right=Cap.ROUND_RIGHT
     ))
 
     powerline_builder.add(Segment(
         f"\uf07b C:\\Chromite", # Needed NERD FONT for icon!
         compose=[Color.Black, ColorBG.hex("#00d7ff")],
-        cap_left=Caps.ROUND_LEFT
+        cap_left=Cap.ROUND_LEFT
     ))
 
     powerline_builder.add(Segment(
