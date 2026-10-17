@@ -82,7 +82,7 @@ List.pointed(["fast", "no dependencies"], bullet="→", bullet_compose=Color.Gre
 ## 📊 Tables
 
 ```python
-from Chromite import Table
+from Chromite import Table, Color
 
 table = Table(style = Chromite.TableStyle.Rounded)
 
@@ -156,6 +156,10 @@ def make_powerline():
 
 input(make_powerline())
 ```
+
+<a href="https://github.com/NastyaNoTamashii/Chromite">
+  <img src="https://github.com/NastyaNoTamashii/Chromite/blob/main/assets/powerlines-example.png" />
+</a>
 
 ---
 
