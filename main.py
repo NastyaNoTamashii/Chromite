@@ -2,8 +2,6 @@ import Chromite
 from Chromite import Color, ColorBG, Style, Table
 from Chromite.powerline import Powerline, Segment, Cap
 
-import rich
-
 Chromite.clear()
 
 Chromite.Write("$red$Welcome! :tada:$reset$", pos=(24, 1)).display()
@@ -33,7 +31,8 @@ def make_powerline():
 
     powerline_builder.add(Segment(
         "\ue725 main.py", # Needed NERD FONT for icon!
-        compose=[Color.Black, ColorBG.Yellow]
+        compose=[Color.Black, ColorBG.Yellow],
+        cap_right=Cap.ARROW_RIGHT
     ))
 
     return powerline_Chromite.flush() + powerline_builder.flush()

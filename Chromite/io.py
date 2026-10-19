@@ -6,9 +6,9 @@
 
 __all__ = ['Write', 'Read', 'cInject', 'clear']
 
-import sys
+import sys, os
 from typing import Union, List, Tuple, Optional
-from .codes import ANSIElement, place, move_cursor, show_cursor
+from .codes import ANSIElement, place, show_cursor
 from .fmt import BaseCodes
 from ._markup import parse_markup
 
@@ -236,4 +236,7 @@ def cInject(text: str, compose: StyleType) -> str:
 
 def clear() -> None:
     """Clears the terminal screen."""
-    print('\x1b[2J\x1b[H', end="", flush=True)
+    try:
+        os.system("cls" if os.name == "nt" else "clear")
+    except:
+        print('\x1b[2J\x1b[H', end="", flush=True)
