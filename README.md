@@ -169,7 +169,12 @@ input(make_powerline())
 </a>
 
 ---
-### If a feature doesn't work, check if your console supports it.
+<h2 align="center">If a feature doesn't work, check if your console supports it.</h2>
+
+<p align="center">
+  Support for asynchronous functions is expected in the future.
+</p>
+
 ---
 
 <div align="center">
