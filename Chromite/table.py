@@ -10,27 +10,12 @@ import re
 import unicodedata
 from dataclasses import dataclass, replace
 from typing import Union, List, Tuple
-from .codes import ANSIElement
+from .codes import ANSIElement, validate_compose, apply_compose
 from .fmt import BaseCodes
 from ._markup import parse_markup
 
 # Type Hint for styles: one element or list/tuple of elements
 StyleType = Union[ANSIElement, List[ANSIElement], Tuple[ANSIElement, ...]]
-
-def _prefix(compose) -> str:
-    """ANSI sequence for 'compose' (an empty string if no style is specified)."""
-    if not compose:
-        return ""
-    if isinstance(compose, ANSIElement):
-        return str(compose)
-    if isinstance(compose, (list, tuple)):
-        return "".join(str(s) for s in compose)
-    return ""
-
-def _input_style(prompt, compose) -> str:
-    """Applying styles to text."""
-    seq = _prefix(compose)
-    return f"{seq}{prompt}{BaseCodes.RESET}" if seq else prompt
 
 # Any style reset: After that, the table color must be reapplied
 _RESET = re.compile(r"\x1b\[0?m|" + re.escape(str(BaseCodes.RESET)))
@@ -53,12 +38,12 @@ class _Style:
     head_h: str | None = None   # Line under the header
     bottom_h: str | None = None # Lower boundary line
 
-    def copy(self, **changes) -> "Style":
+    def copy(self, **changes) -> "TableStyle":
         """Copy the style with changes: ROUNDED.copy(h="=")"""
         return replace(self, **changes)
 
 class TableStyle:
-    """Colors with True-color support (RGB)."""
+    """Different table styles: Single, Rounded, Double and ASCII."""
     Single = _Style()
     Rounded = _Style(tl="╭", tr="╮", bl="╰", br="╯")
     Double = _Style("═", "║", "╔", "╗", "╚", "╝", "╦", "╩", "╠", "╣", "╬")
@@ -112,7 +97,7 @@ def _prepare(text, compose) -> str:
     codes = _ANSI.findall(text)
     if codes and not _RESET.fullmatch(codes[-1]):  # a style opened by markup must not leak out of the cell
         text += str(BaseCodes.RESET)
-    return _input_style(text, compose)
+    return apply_compose(text, compose, BaseCodes)
 
 def _align(text, width, align):
     gap = width - _w(text)
@@ -163,6 +148,8 @@ class Table:
         self._roots = []
         self._rows = []
 
+        validate_compose(self.compose)
+
     def add_column(self, title, compose: StyleType = None, key=None, parent=None, align="left"):
         """
         Adds a column to the table and returns its key.
@@ -185,6 +172,8 @@ class Table:
         :raises ValueError: If a column with this key already exists.
         :raises KeyError: If 'parent' does not match any existing column.
         """
+        validate_compose(compose)
+
         key = title if key is None else key
         if key in self._cols:
             raise ValueError(f"The '{key}' column already exists—please specify a different key")
@@ -220,6 +209,8 @@ class Table:
         is rendered, not when the row is added. Dict keys that match no column are
         ignored.
         """
+        validate_compose(compose)
+
         def style(v):
             return v if v is None else _prepare(v, compose)
 
@@ -325,7 +316,7 @@ class Table:
                 return st.head_h or st.h
             return st.h
 
-        base = _prefix(self.compose)
+        base = validate_compose(self.compose)
         lines = []
         for y in range(total):
             row = [" "] * (x[-1] + 1)
@@ -365,7 +356,7 @@ class Table:
 
     def display(self) -> None:
         """Prints the table to the terminal."""
-        print(self.flush())
+        print(self.flush(), end="", flush=True)
 
     def __str__(self) -> str:
         return self.flush()

@@ -47,6 +47,23 @@ def compose_to_ansi(compose) -> str:
         return "".join(str(s) for s in compose)
     return str(compose)
 
+def apply_compose(content, compose, BaseCodes) -> str:
+    if not compose:
+        return content
+    if isinstance(compose, (ANSIElement, str)):
+        return f"{compose}{content}{BaseCodes.RESET}"
+    if isinstance(compose, (list, tuple)):
+        ansi_seq = "".join(str(c) for c in compose)
+        return f"{ansi_seq}{content}{BaseCodes.RESET}"
+    return content
+
+def validate_compose(compose) -> None:
+    if compose is None or isinstance(compose, ANSIElement):
+        return
+    if isinstance(compose, (list, tuple)) and all(isinstance(s, ANSIElement) for s in compose):
+        return
+    raise TypeError("The 'compose' component must have a Chromite object. (Color, ColorBG, Style etc.)")
+
 def move_cursor(x: int, y: int) -> ANSIElement:
     """Moves the cursor to position (x, y) / (col, row). Numbering starts at 1, 1."""
     return ANSIElement(f"{CSI}{y};{x}H")

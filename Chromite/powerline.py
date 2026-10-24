@@ -6,7 +6,7 @@
 
 import re
 from typing import Union, List, Tuple, Optional
-from .codes import ANSIElement, compose_to_ansi
+from .codes import ANSIElement, compose_to_ansi, validate_compose
 from .fmt import BaseCodes
 from ._markup import parse_markup
 
@@ -61,6 +61,8 @@ class Segment:
         self.compose = compose
         self.cap_left = cap_left
         self.cap_right = cap_right
+
+        validate_compose(self.compose)
 
 class Powerline:
     __slots__ = ("segments",)

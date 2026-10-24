@@ -7,7 +7,7 @@
 __all__ = ['List']
 
 from typing import List as PyList, Union, Optional, Tuple
-from .codes import ANSIElement, place, move_cursor
+from .codes import ANSIElement, place, move_cursor, validate_compose, apply_compose
 from .fmt import BaseCodes
 from ._markup import parse_markup
 
@@ -17,7 +17,7 @@ StyleType = Union[ANSIElement, PyList[ANSIElement], Tuple[ANSIElement, ...]]
 PosType = Tuple[int, int]  # (x, y) or (col, row)
 
 class List:
-    __slots__ = ("items", "bullet", "ordered", "compose", "bullet_compose", "pos",)
+    __slots__ = ("items", "bullet", "ordered", "compose", "bullet_compose", "pos", "markup",)
 
     def __init__(
         self,
@@ -27,7 +27,8 @@ class List:
         ordered: bool = False,
         compose: StyleType = None,
         bullet_compose: StyleType = None,
-        pos: Optional[PosType] = None
+        pos: Optional[PosType] = None,
+        markup: bool = False
     ):
         """
         :param items: A list of text strings or items to be rendered in the list.
@@ -43,30 +44,22 @@ class List:
         self.compose = compose
         self.bullet_compose = bullet_compose
         self.pos = pos
+        self.markup = markup
+
+        validate_compose(self.compose)
 
     def flush(self) -> str:
         """Returns the finished list as a single string: markers, item text with markup and styles applied, items separated by line breaks, and cursor positioning if pos is set."""
         lines = []
         for index, item in enumerate(self.items):
-            # Specify the marker (number or bullet).
+
             prefix = f"{index + 1}." if self.ordered else self.bullet
+            prefix = apply_compose(prefix, self.bullet_compose, BaseCodes)
 
-            # Apply the style to the bullet if 'bullet_compose' is provided.
-            if self.bullet_compose:
-                if isinstance(self.bullet_compose, (list, tuple)):
-                    b_style = "".join(str(s) for s in self.bullet_compose)
-                else:
-                    b_style = str(self.bullet_compose)
-                prefix = f"{b_style}{prefix}{BaseCodes.RESET}"
-
-            # Apply markup parsing and style to the text if 'compose' is provided.
-            item_text = parse_markup(str(item))
-            if self.compose:
-                if isinstance(self.compose, (list, tuple)):
-                    t_style = "".join(str(s) for s in self.compose)
-                else:
-                    t_style = str(self.compose)
-                item_text = f"{t_style}{item_text}{BaseCodes.RESET}"
+            item_text = item
+            if self.markup is True:
+                item_text = parse_markup(str(item))
+            item_text = apply_compose(item_text, self.compose, BaseCodes)
 
             lines.append(f"{prefix} {item_text}")
 
@@ -83,7 +76,7 @@ class List:
 
     def display(self) -> None:
         """Prints the finished list to the terminal, followed by a line break."""
-        print(self.flush())
+        print(self.flush(), end="", flush=True)
 
     def __str__(self) -> str:
         return self.flush()

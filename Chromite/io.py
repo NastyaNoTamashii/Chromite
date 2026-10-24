@@ -8,7 +8,7 @@ __all__ = ['Write', 'Read', 'cInject', 'clear']
 
 import sys, os
 from typing import Union, List, Tuple, Optional
-from .codes import ANSIElement, place, show_cursor
+from .codes import ANSIElement, place, show_cursor, validate_compose, apply_compose
 from .fmt import BaseCodes
 from ._markup import parse_markup
 
@@ -75,7 +75,7 @@ def _read_masked_input(mask_char: str) -> str:
     return "".join(buf)
 
 class Write:
-    __slots__ = ("text", "compose", "pos",)
+    __slots__ = ("text", "compose", "pos", "markup",)
 
     def __init__(
         self, 
@@ -95,32 +95,12 @@ class Write:
         self.compose = compose
         self.pos = pos
 
-        self._validate_compose(compose)
-
-    def _validate_compose(self, compose: StyleType) -> None:
-        if compose is None:
-            return
-        if isinstance(compose, ANSIElement):
-            return
-        if isinstance(compose, (list, tuple)) and all(isinstance(comp, ANSIElement) for comp in compose):
-            return
-        raise TypeError("The 'compose' component must have a Chromite object. (Color, ColorBG, Style etc.)")
-    
-    def _text_processing(self) -> str:
-        """Assembles and returns the styled string with position codes."""
-        text = self.text
-        if self.compose:
-            if isinstance(self.compose, ANSIElement):
-                style = str(self.compose)
-            else:
-                style = "".join(str(c) for c in self.compose)
-            text = f"{style}{text}{BaseCodes.RESET}"
-
-        return place(text, self.pos)
+        validate_compose(self.compose)
 
     def flush(self) -> str:
         """Returns the finished text as a string, with the style (compose) and the cursor position (pos) applied. Nothing is printed. Calling it several times gives the same result."""
-        return self._text_processing()
+        text = apply_compose(self.text, self.compose, BaseCodes)
+        return place(text, self.pos)
 
     def display(self) -> None:
         """Prints the finished text to the terminal right away, without a trailing line break, so the next output continues on the same line."""
@@ -157,30 +137,12 @@ class Read:
         self.pos = pos
         self.type = type.lower()
 
-        self._validate_compose(self.compose)
-        self._validate_compose(self.value_compose)
-
-    def _validate_compose(self, style: StyleType) -> None:
-        if style is None or isinstance(style, ANSIElement):
-            return
-        if isinstance(style, (list, tuple)) and all(isinstance(s, ANSIElement) for s in style):
-            return
-        raise TypeError("The 'compose' component must have a Chromite object. (Color, ColorBG, Style etc.)")
-
-    def _input_style(self) -> str:
-        """Applying styles to text."""
-        if not self.compose:
-            return self.prompt
-        if isinstance(self.compose, ANSIElement):
-            return f"{self.compose}{self.prompt}{BaseCodes.RESET}"
-        if isinstance(self.compose, (list, tuple)):
-            ansi_seq = "".join(str(s) for s in self.compose)
-            return f"{ansi_seq}{self.prompt}{BaseCodes.RESET}"
-        return self.prompt
+        validate_compose(self.compose)
+        validate_compose(self.value_compose)
 
     def _prepare_prompt(self) -> str:
         """Assembles an ANSI string for the prompt and cursor position."""
-        formatted_prompt = self._input_style()
+        formatted_prompt = apply_compose(self.prompt, self.compose, BaseCodes)
         
         input_ansi_start = ""
         if self.value_compose:
