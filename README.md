@@ -158,6 +158,10 @@ def make_powerline():
 input(make_powerline())
 ```
 
+<a href="https://github.com/NastyaNoTamashii/Chromite">
+  <img src="https://github.com/NastyaNoTamashii/Chromite/blob/main/assets/powerlines-example.png" />
+</a>
+
 ## 🌳 Tree
 
 ```python
@@ -190,10 +194,6 @@ Tree = Chromite.Tree(
 
 Tree.display()
 ```
-
-<a href="https://github.com/NastyaNoTamashii/Chromite">
-  <img src="https://github.com/NastyaNoTamashii/Chromite/blob/main/assets/powerlines-example.png" />
-</a>
 
 ---
 
