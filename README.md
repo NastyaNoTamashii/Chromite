@@ -195,6 +195,20 @@ Tree = Chromite.Tree(
 Tree.display()
 ```
 
+```
+root
+╰── MyProject/
+    ├── config/
+    │   ├── db.config.js
+    │   ╰── env.config.js
+    ├── services/
+    │   ├── email.service.js
+    │   ╰── payment.service.js
+    ╰── utils/
+        ├── email.utils.js
+        ├── payment.utils.js
+        ╰── logger.js% 
+```
 ---
 
 <a href="https://github.com/NastyaNoTamashii/Chromite/graphs/contributors">
