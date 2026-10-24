@@ -158,6 +158,39 @@ def make_powerline():
 input(make_powerline())
 ```
 
+## 🌳 Tree
+
+```python
+from Chromite import Tree, TreeStyle, Color
+
+mytree = {
+    "MyProject/": {
+        "config/": [
+            "db.config.js",
+            "env.config.js"
+        ],
+        "services/": [
+            "email.service.js",
+            "payment.service.js"
+        ],
+        "utils/": [
+            "email.utils.js",
+            "payment.utils.js",
+            "logger.js"
+        ]
+    }
+}
+
+Tree = Chromite.Tree(
+    mytree,
+    compose=Color.Gold,
+    branch_compose=Color.Red,
+    style=TreeStyle.Rounded
+)
+
+Tree.display()
+```
+
 <a href="https://github.com/NastyaNoTamashii/Chromite">
   <img src="https://github.com/NastyaNoTamashii/Chromite/blob/main/assets/powerlines-example.png" />
 </a>
