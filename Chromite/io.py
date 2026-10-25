@@ -1,21 +1,25 @@
 """
 
-    Copyright (C) 2026 NastyaNoTamashii.
+Chromite/io.py
+~~~~~~~~~~~~~~
+Main library files: Write, Read.
+
+Copyright (C) 2026 NastyaNoTamashii.
+License: MIT
+Author: NastyaNoTamashii
 
 """
 
 __all__ = ['Write', 'Read', 'cInject', 'clear']
 
-import sys, os
-from typing import Union, List, Tuple, Optional
-from .codes import ANSIElement, place, show_cursor, validate_compose, apply_compose
+import sys
+from typing import Optional
+from .terminal import show_cursor, place
+from .codes import ANSIElement, validate_compose, apply_compose
 from .fmt import BaseCodes
+from ._base import Renderable
 from ._markup import parse_markup
-
-# Type Hint for styles: one element or list/tuple of elements
-StyleType = Union[ANSIElement, List[ANSIElement], Tuple[ANSIElement, ...]]
-
-PosType = Tuple[int, int]  # (x, y) or (col, row)
+from ._types import StyleType, PosType
 
 try:
     import msvcrt
@@ -74,7 +78,7 @@ def _read_masked_input(mask_char: str) -> str:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
     return "".join(buf)
 
-class Write:
+class Write(Renderable):
     __slots__ = ("text", "compose", "pos", "markup",)
 
     def __init__(
@@ -99,18 +103,8 @@ class Write:
 
     def flush(self) -> str:
         """Returns the finished text as a string, with the style (compose) and the cursor position (pos) applied. Nothing is printed. Calling it several times gives the same result."""
-        text = apply_compose(self.text, self.compose, BaseCodes)
+        text = apply_compose(self.text, self.compose)
         return place(text, self.pos)
-
-    def display(self) -> None:
-        """Prints the finished text to the terminal right away, without a trailing line break, so the next output continues on the same line."""
-        print(self.flush(), end="", flush=True)
-
-    def __str__(self) -> str:
-        return self.flush()
-
-    def __call__(self) -> None:
-        return self.display()
 
 class Read:
     __slots__ = ("prompt", "compose", "value_compose", "pos", "type",)
@@ -142,7 +136,7 @@ class Read:
 
     def _prepare_prompt(self) -> str:
         """Assembles an ANSI string for the prompt and cursor position."""
-        formatted_prompt = apply_compose(self.prompt, self.compose, BaseCodes)
+        formatted_prompt = apply_compose(self.prompt, self.compose)
         
         input_ansi_start = ""
         if self.value_compose:
@@ -195,10 +189,3 @@ class Read:
 
 def cInject(text: str, compose: StyleType) -> str:
     return f"{compose}{text}{BaseCodes.RESET}"
-
-def clear() -> None:
-    """Clears the terminal screen."""
-    try:
-        os.system("cls" if os.name == "nt" else "clear")
-    except:
-        print('\x1b[2J\x1b[H', end="", flush=True)

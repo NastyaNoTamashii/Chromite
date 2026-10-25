@@ -1,6 +1,12 @@
 """
 
-    Copyright (C) 2026 NastyaNoTamashii.
+Chromite/table.py
+~~~~~~~~~~~~~~~~~
+Creating powerful and practical tables.
+
+Copyright (C) 2026 NastyaNoTamashii.
+License: MIT
+Author: NastyaNoTamashii
 
 """
 
@@ -9,13 +15,10 @@ __all__ = ['Table', 'TableStyle']
 import re
 import unicodedata
 from dataclasses import dataclass, replace
-from typing import Union, List, Tuple
-from .codes import ANSIElement, validate_compose, apply_compose
+from .codes import validate_compose, apply_compose, compose_to_ansi
 from .fmt import BaseCodes
+from ._base import Renderable
 from ._markup import parse_markup
-
-# Type Hint for styles: one element or list/tuple of elements
-StyleType = Union[ANSIElement, List[ANSIElement], Tuple[ANSIElement, ...]]
 
 # Any style reset: After that, the table color must be reapplied
 _RESET = re.compile(r"\x1b\[0?m|" + re.escape(str(BaseCodes.RESET)))
@@ -97,7 +100,7 @@ def _prepare(text, compose) -> str:
     codes = _ANSI.findall(text)
     if codes and not _RESET.fullmatch(codes[-1]):  # a style opened by markup must not leak out of the cell
         text += str(BaseCodes.RESET)
-    return apply_compose(text, compose, BaseCodes)
+    return apply_compose(text, compose)
 
 def _align(text, width, align):
     gap = width - _w(text)
@@ -124,7 +127,7 @@ class _Col:
     def __init__(self, title, key, align):
         self.title, self.key, self.align, self.children = title, key, align, []
 
-class Table:
+class Table(Renderable):
     __slots__ = ("style", "compose", "padding", "row_lines", "_cols", "_roots", "_rows",)
 
     def __init__(
@@ -132,7 +135,7 @@ class Table:
         style: TableStyle = TableStyle.Single,
         compose: StyleType = None,
         padding = 1,
-        row_lines = False,
+        row_lines = False
     ):
         """
         :param style: Table Design Style (Single, Rounded, Double, ASCII).
@@ -259,7 +262,7 @@ class Table:
         walk(self._roots, 0)
         return leaves, nodes
 
-    def render(self):
+    def flush(self) -> str:
         leaves, nodes = self._layout()
         if not leaves:
             raise ValueError("There are no columns in the table.")
@@ -316,7 +319,7 @@ class Table:
                 return st.head_h or st.h
             return st.h
 
-        base = validate_compose(self.compose)
+        base = compose_to_ansi(self.compose)
         lines = []
         for y in range(total):
             row = [" "] * (x[-1] + 1)
@@ -349,17 +352,3 @@ class Table:
                 line = base + _RESET.sub(lambda m: m.group() + base, line) + str(BaseCodes.RESET)
             lines.append(line)
         return "\n".join(lines)
-
-    def flush(self) -> str:
-        """Returns the finished table as a string, with ANSI styles and line breaks."""
-        return self.render()
-
-    def display(self) -> None:
-        """Prints the table to the terminal."""
-        print(self.flush(), end="", flush=True)
-
-    def __str__(self) -> str:
-        return self.flush()
-    
-    def __call__(self) -> None:
-        return self.display()

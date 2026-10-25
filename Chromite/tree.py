@@ -1,58 +1,60 @@
 """
 
-    Copyright (C) 2026 NastyaNoTamashii.
+Chromite/tree.py
+~~~~~~~~~~~~~~~~
+Creating trees.
+
+Copyright (C) 2026 NastyaNoTamashii.
+License: MIT
+Author: NastyaNoTamashii
 
 """
 
+from __future__ import annotations
+
 __all__ = ['Tree', 'TreeStyle', 'Branch']
 
-from typing import List as PyList, Union, Any, Tuple, Optional
+from typing import Any, Optional
 from dataclasses import dataclass, replace
-from .codes import ANSIElement, show_cursor, place, validate_compose, apply_compose
-from .fmt import BaseCodes
-from .io import Write
-
-# Type Hint for styles: one element or list/tuple of elements
-StyleType = Union[ANSIElement, PyList[ANSIElement], Tuple[ANSIElement, ...]]
-
-PosType = Tuple[int, int]  # (x, y) or (col, row)
+from .terminal import place
+from .codes import validate_compose, apply_compose
+from ._base import Renderable
+from ._types import StyleType, PosType
 
 def _add_data(parent: Tree, data: dict | list | tuple) -> list[Branch]:
     """Convert a dict/list into nested branches within a parent element."""
-    if isinstance(data, dict):
-        items = [(str(k), v) for k, v in data.items()]
-    else:
-        items = [(i, v) for i, v in enumerate(data)]
-
+    items = data.items() if isinstance(data, dict) else enumerate(data)
     created: list[Branch] = []
     for key, value in items:
         if isinstance(value, (dict, list, tuple)) and value:
-            branch = parent.add_branch(key)
+            branch = parent.add_branch(str(key))
             _add_data(branch, value)
+        elif isinstance(data, dict):
+            branch = parent.add_branch(f"{key}: {value}")  # the key is not lost
         else:
-            branch = parent.add_branch(value)
+            branch = parent.add_branch(str(value))
         created.append(branch)
     return created
 
 # Table styles
 @dataclass(frozen=True)
 class _Style:
-    branch: str = "├── "  # Horizontal line
-    last: str =   "└── "  # Vertical line
-    pipe: str =   "│   "  # Corner top-left
-    space: str =  "    "  # Corner top-right
+    branch: str = "├── "
+    last: str =   "└── "
+    pipe: str =   "│   "
+    space: str =  "    "
     
     def copy(self, **changes) -> "TreeStyle":
         """Copy the style with changes: ROUNDED.copy(h="=")"""
         return replace(self, **changes)
 
 class TreeStyle:
-    """Different tree styles: Single, Rounded, ASCII"""
+    """Different tree styles: Single, Rounded"""
     Single = _Style()
     Rounded = _Style(last="╰── ")
 
-class Tree:
-    __slots__ = ("label", "style", "compose", "branch_compose", "data", "pos", "max_depth", "children",)
+class Tree(Renderable):
+    __slots__ = ("label", "style", "compose", "branch_compose", "pos", "max_depth", "children",)
 
     def __init__(
         self,
@@ -113,45 +115,30 @@ class Tree:
         return branch
 
     def flush(self) -> str:
-        """Returns the finished tree as a single string: markers, item text with markup and styles applied, items separated by line breaks, and cursor positioning if pos is set."""
-        children = lambda t: t.children
-        label = lambda t: t.label
-        lines = [self.label]
-        
-        def walk(node: Any, prefix: str, depth: int) -> None:
+        """Returns the finished tree as a single string, with styles applied and cursor positioning if pos is set."""
+        lines = [apply_compose(self.label, self.compose)]
+        last, branch, space, pipe = (
+            apply_compose(attr, self.branch_compose)
+            for attr in (self.style.last, self.style.branch, self.style.space, self.style.pipe)
+        )
+
+        def walk(node: Tree, prefix: str, depth: int) -> None:
             if self.max_depth is not None and depth >= self.max_depth:
                 return
-            kids = list(children(node))
-            for i, kid in enumerate(kids):
-                is_last = i == len(kids) - 1
-
-                last, branch, space, pipe = (
-                    apply_compose(attr, self.branch_compose, BaseCodes) 
-                    for attr in (self.style.last, self.style.branch, self.style.space, self.style.pipe)
-                )
-
-                lines.append(prefix + (last if is_last else branch) + apply_compose(label(kid), self.compose, BaseCodes))
+            for i, kid in enumerate(node.children):
+                is_last = i == len(node.children) - 1
+                lines.append(prefix + (last if is_last else branch) + apply_compose(kid.label, self.compose))
                 walk(kid, prefix + (space if is_last else pipe), depth + 1)
 
         walk(self, "", 0)
-
-        text = apply_compose("\n".join(lines), self.compose, BaseCodes)
-        return place(f"{show_cursor()}{text}", self.pos)
-
-    def display(self) -> Write:
-        """Immediately outputs "Tree" to the terminal."""
-        print(self.flush(), end="", flush=True)
-
-    def __str__(self) -> str:
-        return self.flush()
-
-    def __call__(self) -> None:
-        return self.display()
+        return place("\n".join(lines), self.pos)
     
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.label!r}, children={len(self.children)})"
 
 class Branch(Tree):
+    __slots__ = ("parent",)
+
     def __init__(self, label: Any, parent: Tree) -> None:
         """A Branch is a Tree that has a parent (and therefore can also call `add_branch`)."""
         super().__init__(label)

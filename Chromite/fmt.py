@@ -1,22 +1,23 @@
 """
 
-    Copyright (C) 2026 NastyaNoTamashii.
+Chromite/fmt.py
+~~~~~~~~~~~~~~~
+Text formatting: Colors, background colors, text styles, and more.
+
+Copyright (C) 2026 NastyaNoTamashii.
+License: MIT
+Author: NastyaNoTamashii
 
 """
 
 import random
-from .codes import ANSIElement, make_ansi, make_ansi_x256, make_ansi_rgb
+from .codes import ANSIElement, make_ansi, make_ansi_x256, make_ansi_rgb, RESET as _RESET
+from ._utils import classproperty
 
 __all__ = ['Color', 'ColorBG', 'Style', 'link']
 
-class classproperty:
-    def __init__(self, f):
-        self.f = f
-    def __get__(self, obj, owner):
-        return self.f(owner)
-
 class BaseCodes:
-    RESET = make_ansi(0)
+    RESET = _RESET
 
 class Color(BaseCodes):
     """Colors with True-color support (RGB)."""

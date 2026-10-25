@@ -1,6 +1,12 @@
 """
 
-    Copyright (C) 2026 NastyaNoTamashii.
+Chromite/_markup.py
+~~~~~~~~~~~~~~~~~~~
+Initializing markup support in the code.
+
+Copyright (C) 2026 NastyaNoTamashii.
+License: MIT
+Author: NastyaNoTamashii
 
 """
 

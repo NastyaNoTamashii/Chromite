@@ -1,19 +1,23 @@
 """
 
-    Copyright (C) 2026 NastyaNoTamashii.
+Chromite/powerline.py
+~~~~~~~~~~~~~~~~~~~~~
+Creating a powerline—this might come in handy when used with Read/input.
+
+Copyright (C) 2026 NastyaNoTamashii.
+License: MIT
+Author: NastyaNoTamashii
 
 """
 
-import re
-from typing import Union, List, Tuple, Optional
-from .codes import ANSIElement, compose_to_ansi, validate_compose
-from .fmt import BaseCodes
-from ._markup import parse_markup
-
 __all__ = ['Powerline', 'Segment', 'Cap']
 
-# Type Hint for styles: one element or list/tuple of elements
-StyleType = Union[ANSIElement, List[ANSIElement], Tuple[ANSIElement, ...]]
+from typing import List, Optional
+from .codes import ANSIElement, compose_to_ansi, validate_compose
+from .fmt import BaseCodes
+from ._base import Renderable
+from ._markup import parse_markup
+from ._types import StyleType, PosType
 
 def _bg_of(compose: StyleType) -> Optional[ANSIElement]:
     """
@@ -64,7 +68,7 @@ class Segment:
 
         validate_compose(self.compose)
 
-class Powerline:
+class Powerline(Renderable):
     __slots__ = ("segments",)
 
     def __init__(self, segments: Optional[List[Segment]] = None):
@@ -115,13 +119,3 @@ class Powerline:
 
         result.append(f"{BaseCodes.RESET} ")
         return "".join(result)
-
-    def display(self) -> None:
-        """Immediately outputs "powerline" to the terminal."""
-        print(self.flush(), end="", flush=True)
-
-    def __str__(self) -> str:
-        return self.flush()
-
-    def __call__(self) -> None:
-        return self.display()

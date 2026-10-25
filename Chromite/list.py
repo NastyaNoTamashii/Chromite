@@ -1,22 +1,25 @@
 """
 
-    Copyright (C) 2026 NastyaNoTamashii.
+Chromite/list.py
+~~~~~~~~~~~~~~~~
+Creating useful lists.
+
+Copyright (C) 2026 NastyaNoTamashii.
+License: MIT
+Author: NastyaNoTamashii
 
 """
 
 __all__ = ['List']
 
 from typing import List as PyList, Union, Optional, Tuple
-from .codes import ANSIElement, place, move_cursor, validate_compose, apply_compose
-from .fmt import BaseCodes
+from .terminal import place
+from .codes import validate_compose, apply_compose
+from ._base import Renderable
 from ._markup import parse_markup
+from ._types import StyleType, PosType
 
-# Type Hint for styles: one element or list/tuple of elements
-StyleType = Union[ANSIElement, PyList[ANSIElement], Tuple[ANSIElement, ...]]
-
-PosType = Tuple[int, int]  # (x, y) or (col, row)
-
-class List:
+class List(Renderable):
     __slots__ = ("items", "bullet", "ordered", "compose", "bullet_compose", "pos", "markup",)
 
     def __init__(
@@ -54,12 +57,12 @@ class List:
         for index, item in enumerate(self.items):
 
             prefix = f"{index + 1}." if self.ordered else self.bullet
-            prefix = apply_compose(prefix, self.bullet_compose, BaseCodes)
+            prefix = apply_compose(prefix, self.bullet_compose)
 
             item_text = item
             if self.markup is True:
                 item_text = parse_markup(str(item))
-            item_text = apply_compose(item_text, self.compose, BaseCodes)
+            item_text = apply_compose(item_text, self.compose)
 
             lines.append(f"{prefix} {item_text}")
 
@@ -73,13 +76,3 @@ class List:
     @classmethod
     def numbered(cls, items: PyList[str], **kwargs) -> "List":
         return cls(items, ordered=True, **kwargs)
-
-    def display(self) -> None:
-        """Prints the finished list to the terminal, followed by a line break."""
-        print(self.flush(), end="", flush=True)
-
-    def __str__(self) -> str:
-        return self.flush()
-    
-    def __call__(self) -> None:
-        return self.display()

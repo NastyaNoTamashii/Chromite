@@ -1,6 +1,12 @@
 """
 
-    Copyright (C) 2026 NastyaNoTamashii
+Chromite/_emoji_map.py
+~~~~~~~~~~~~~~~~~~~~~~
+Emoji map.
+
+Copyright (C) 2026 NastyaNoTamashii.
+License: MIT
+Author: NastyaNoTamashii
 
 """
 

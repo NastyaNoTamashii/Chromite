@@ -1,6 +1,11 @@
 """
 
-    Copyright (C) 2026 NastyaNoTamashii.
+Chromite/codes.py
+~~~~~~~~~~~~~~~~~
+
+Copyright (C) 2026 NastyaNoTamashii.
+License: MIT
+Author: NastyaNoTamashii
 
 """
 
@@ -26,8 +31,13 @@ class ANSIElement(str):
 
 def make_ansi(code: int) -> ANSIElement:
     """Make ANSI code."""
-    fg = ANSIElement(f"{CSI}{code}m", "fg")
-    return ANSIElement(f"{CSI}{code}m", "bg", fg)
+    if 40 <= code <= 47 or 100 <= code <= 107:
+        return ANSIElement(f"{CSI}{code}m", "bg", ANSIElement(f"{CSI}{code - 10}m", "fg"))
+    if 30 <= code <= 37 or 90 <= code <= 97:
+        return ANSIElement(f"{CSI}{code}m", "fg")
+    return ANSIElement(f"{CSI}{code}m")
+
+RESET = make_ansi(0)
 
 def make_ansi_x256(code: int, *, bg: bool = None) -> ANSIElement:
     """Make x256 ANSI code (8-bit)."""
@@ -47,14 +57,14 @@ def compose_to_ansi(compose) -> str:
         return "".join(str(s) for s in compose)
     return str(compose)
 
-def apply_compose(content, compose, BaseCodes) -> str:
+def apply_compose(content, compose) -> str:
     if not compose:
         return content
     if isinstance(compose, (ANSIElement, str)):
-        return f"{compose}{content}{BaseCodes.RESET}"
+        return f"{compose}{content}{RESET}"
     if isinstance(compose, (list, tuple)):
         ansi_seq = "".join(str(c) for c in compose)
-        return f"{ansi_seq}{content}{BaseCodes.RESET}"
+        return f"{ansi_seq}{content}{RESET}"
     return content
 
 def validate_compose(compose) -> None:
@@ -63,37 +73,3 @@ def validate_compose(compose) -> None:
     if isinstance(compose, (list, tuple)) and all(isinstance(s, ANSIElement) for s in compose):
         return
     raise TypeError("The 'compose' component must have a Chromite object. (Color, ColorBG, Style etc.)")
-
-def move_cursor(x: int, y: int) -> ANSIElement:
-    """Moves the cursor to position (x, y) / (col, row). Numbering starts at 1, 1."""
-    return ANSIElement(f"{CSI}{y};{x}H")
-
-def place(text: str, pos) -> str:
-    """
-    Puts 'text' at pos=(x, y), numbering from 0, 0.
-    Every line of a multi-line text gets its own cursor move, so the x offset
-    is kept after '\\n' and the lines do not overwrite each other.
-    """
-    if pos is None:
-        return text
-    x, y = pos
-    return "\n".join(
-        f"{move_cursor(max(1, x + 1), max(1, y + 1 + i))}{line}"
-        for i, line in enumerate(text.split("\n"))
-    )
-
-def hide_cursor() -> ANSIElement:
-    """Hides the cursor."""
-    return ANSIElement(f"{CSI}?25l")
-
-def show_cursor() -> ANSIElement:
-    """Shows the cursor."""
-    return ANSIElement(f"{CSI}?25h")
-
-def save_cursor() -> ANSIElement:
-    """Saves the current cursor position."""
-    return ANSIElement(f"{CSI}s")
-
-def restore_cursor() -> ANSIElement:
-    """Restores the saved cursor position."""
-    return ANSIElement(f"{CSI}u")
