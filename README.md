@@ -233,6 +233,11 @@ print('\n')
 print("--- CS EDITOR WITH HIGHLIGHT ---")
 print(make_editor(cs_code, 'cs', filename='MyCode.cs'))
 ```
+
+<a href="https://github.com/NastyaNoTamashii/Chromite">
+  <img src="https://github.com/NastyaNoTamashii/Chromite/blob/main/assets/cs-editor.png" />
+</a>
+
 ---
 
 <a href="https://github.com/NastyaNoTamashii/Chromite/graphs/contributors">
