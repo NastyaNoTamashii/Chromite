@@ -1,5 +1,5 @@
 import Chromite
-from Chromite import Color, ColorBG, Style, Table, print, input
+from Chromite import Color, ColorBG, Style, Table, print, input, Syntax, make_editor
 from Chromite.powerline import Powerline, Segment, Cap
 
 Chromite.clear()
@@ -18,13 +18,12 @@ def make_powerline():
     powerline_Chromite.add(Segment(
         ":crystal_ball: Chromite", 
         compose=[Color.White, ColorBG.hex("#5f00d7")],
-        cap_left=Cap.ROUND_LEFT,
-        cap_right=Cap.ROUND_RIGHT
+        cap_left=Cap.ARROW_LEFT,
+        cap_right=Cap.ARROW_RIGHT
     ))
     powerline_builder.add(Segment(
         f"\uf07b C:\\Chromite", # Needed NERD FONT for icon!
-        compose=[Color.Black, ColorBG.hex("#00d7ff")],
-        cap_left=Cap.ROUND_LEFT
+        compose=[Color.Black, ColorBG.hex("#00d7ff")]
     ))
     powerline_builder.add(Segment(
         "\ue725 main.py", # Needed NERD FONT for icon!
@@ -72,14 +71,40 @@ mytree = {
     }
 }
 
-print('$red$Hello world')
-print('asdad')
-
-Chromite.List.display
-
-Chromite.Tree(
+print(Chromite.Tree(
     mytree,
     compose=Color.Gold,
     branch_compose=Color.Red,
     style=Chromite.TreeStyle.Rounded
-).display()
+).flush())
+
+# --- PHP ---
+php_code = """<?php
+class Greeter {
+    public function sayHello(string $name): void {
+        echo "Hello, " . $name;
+    }
+}
+$g = new Greeter();
+$g->sayHello("World");
+?>
+"""
+
+print("\n--- PHP EDITOR WITH HIGHLIGHT ---")
+print(make_editor(php_code, 'php', filename='MyCode.php'))
+
+# --- C# (CS) ---
+cs_code = """using System;
+
+namespace App {
+    class Program {
+        static void Main(string[] args) {
+            var msg = "Hello from C#";
+            Console.WriteLine(msg);
+        }
+    }
+}
+"""
+
+print("\n--- CS EDITOR WITH HIGHLIGHT ---")
+print(make_editor(cs_code, 'cs', filename='MyCode.cs'))

@@ -19,6 +19,7 @@ from .codes import validate_compose, apply_compose, compose_to_ansi
 from .fmt import BaseCodes
 from ._base import Renderable
 from ._markup import parse_markup
+from ._types import StyleType
 
 # Any style reset: After that, the table color must be reapplied
 _RESET = re.compile(r"\x1b\[0?m|" + re.escape(str(BaseCodes.RESET)))
