@@ -209,6 +209,30 @@ root
         ├── payment.utils.js
         ╰── logger.js% 
 ```
+
+## 💻 Code editor in terminal
+
+```python
+from Chromite import Syntax, make_editor
+
+cs_code = """using System;
+
+namespace App {
+    class Program {
+        static void Main(string[] args) {
+            var msg = "Hello from C#";
+            Console.WriteLine(msg);
+        }
+    }
+}
+"""
+
+print("\n--- CS HIGHLIGHT ---")
+print(Syntax.cs(cs_code))
+print('\n')
+print("--- CS EDITOR WITH HIGHLIGHT ---")
+print(make_editor(cs_code, 'cs', filename='MyCode.cs'))
+```
 ---
 
 <a href="https://github.com/NastyaNoTamashii/Chromite/graphs/contributors">
