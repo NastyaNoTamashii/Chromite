@@ -207,7 +207,7 @@ root
     ╰── utils/
         ├── email.utils.js
         ├── payment.utils.js
-        ╰── logger.js% 
+        ╰── logger.js
 ```
 
 ## 💻 Code editor in terminal
