@@ -12,7 +12,6 @@ Author: NastyaNoTamashii
 
 import random
 from .codes import ANSIElement, make_ansi, make_ansi_x256, make_ansi_rgb, RESET as _RESET
-from ._utils import classproperty
 
 __all__ = ['Color', 'ColorBG', 'Style', 'link']
 
@@ -52,6 +51,7 @@ class Color(BaseCodes):
     BrightMagenta= make_ansi_rgb(255, 0  , 255)
     Pink         = make_ansi_rgb(255, 192, 203)
     Purple       = make_ansi_rgb(128, 0  , 128)
+    Random       = make_ansi_x256(random.randint(0, 255))
 
     @staticmethod
     def rgb(r: int, g: int, b: int) -> ANSIElement:
@@ -77,11 +77,6 @@ class Color(BaseCodes):
         if not 0 <= code <= 255:
             raise ValueError("256-color index must be between 0 and 255.")
         return make_ansi_x256(f"{code}")
-    
-    @classproperty
-    def Random(self) -> ANSIElement:
-        """Returns a random text color each time."""
-        return make_ansi_x256(random.randint(0, 255))
 
 class ColorBG(BaseCodes):
     Black        = make_ansi_rgb(0  , 0  , 0  , bg=True)
@@ -115,6 +110,7 @@ class ColorBG(BaseCodes):
     BrightMagenta= make_ansi_rgb(255, 0  , 255, bg=True)
     Pink         = make_ansi_rgb(255, 192, 203, bg=True)
     Purple       = make_ansi_rgb(128, 0  , 128, bg=True)
+    Random       = make_ansi_x256(random.randint(0, 255), bg=True)
 
     @staticmethod
     def rgb(r: int, g: int, b: int) -> ANSIElement:
@@ -140,11 +136,6 @@ class ColorBG(BaseCodes):
         if not 0 <= code <= 255:
             raise ValueError("256-color index must be between 0 and 255.")
         return make_ansi_x256(f"{code}", bg = True)
-
-    @classproperty
-    def Random(self) -> ANSIElement:
-        """Returns a random background color each time."""
-        return make_ansi_x256(random.randint(0, 255), bg = True)
 
 class Style(BaseCodes):
     Bold      = make_ansi(1)

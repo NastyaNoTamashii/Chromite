@@ -205,7 +205,7 @@ SYNTAX_MAP: Dict[str, Dict[str, Any]] = {
             'i8', 'i16', 'i32', 'i64', 'i128', 'isize',
             'u8', 'u16', 'u32', 'u64', 'u128', 'usize',
             'f32', 'f64', 'bool', 'char', 'str', 'String', 'Vec', 'Option', 'Result',
-            'println!', 'print!', 'format!', 'vec!', 'panic!', 'assert!', 'todo!', 'dbg!'
+            'println', 'print', 'format', 'vec', 'panic', 'assert', 'todo', 'dbg'
         },
         'comments': [r'//[/!].*', r'//.*', r'/\*[\s\S]*?\*/'],
         'strings': [r'r#\".*?\"#', r'\".*?\"', r'\'.*?\''],
@@ -246,7 +246,7 @@ SYNTAX_MAP: Dict[str, Dict[str, Any]] = {
         'storage_keywords': {
             'class', 'interface', 'enum', 'record', 'public', 'private', 
             'protected', 'static', 'final', 'abstract', 'synchronized', 
-            'volatile', 'transient', 'native', 'strictfp', 'package', 'import', 'extens', 'implements'
+            'volatile', 'transient', 'native', 'strictfp', 'package', 'import', 'extends', 'implements'
         },
         'constants': {'true', 'false', 'null'},
         'builtins': {
@@ -310,7 +310,7 @@ SYNTAX_MAP: Dict[str, Dict[str, Any]] = {
             'echo', 'pause', 'cls', 'rem', 'cd', 'dir', 'copy', 'move', 
             'del', 'start', 'taskkill', 'xcopy', 'robocopy'
         },
-        'comments': [r'(?i)\bREM\b.*', r'::.*'],
+        'comments': [r'(?i:\bREM\b.*', r'::.*'],
         'strings': [r'\".*?\"'],
         'var_prefix': '%',
         'extractor': lambda code: (

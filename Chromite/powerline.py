@@ -10,6 +10,8 @@ Author: NastyaNoTamashii
 
 """
 
+from __future__ import annotations
+
 __all__ = ['Powerline', 'Segment', 'Cap']
 
 from typing import List, Optional

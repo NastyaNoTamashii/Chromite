@@ -10,19 +10,22 @@ Author: NastyaNoTamashii
 
 """
 
-__all__ = ['Syntax', 'make_editor']
+__all__ = ['Syntax', 'Editor', 'SyntaxTheme', 'EditorTheme']
 
 import re
 from dataclasses import dataclass, replace
 from typing import Dict, Any, Optional
+from .terminal import place
 from .fmt import Color, ColorBG
-from ._types import StyleType
+from ._base import Renderable
+from ._types import StyleType, PosType
+from ._text import _cut
 from ._syntax_map import SYNTAX_MAP
 import shutil
 
 # Editor themes
 @dataclass(frozen=True)
-class _CodeColorSheme:
+class _SyntaxTheme:
     # --- VS Code Dark+ code color sheme  --- 
     kwc: StyleType = Color.rgb(197, 134, 192)  # Keyword control: Purple (if, elif, return)
     kws: StyleType = Color.rgb(86, 156, 214)   # Keyword storage: Blue (def, class, const)
@@ -36,15 +39,78 @@ class _CodeColorSheme:
     n:   StyleType = Color.rgb(181, 206, 168)  # Interable: Light green (123)
     com: StyleType = Color.rgb(106, 153, 85)   # Comment: Green (#, //)
 
+    def copy(self, **changes) -> "SyntaxTheme":
+        """Copy the style with changes"""
+        return replace(self, **changes)
+
+class SyntaxTheme:
+    """Code color theme: Visual Studio Dark+."""
+    VS_code_DarkPlus = _SyntaxTheme()
+
+# Editor themes
+@dataclass(frozen=True)
+class _EditorTheme:
+    # Visual Studio Code Dark+ theme
+    bgc:  StyleType = ColorBG.rgb(30, 30, 30)  # Editor background
+    bga:  StyleType = ColorBG.rgb(40, 42, 46)  # Active line background
+    bgg:  StyleType = ColorBG.rgb(37, 37, 38)  # Gutter background
+    bgt:  StyleType = ColorBG.rgb(50, 50, 52)  # Title backgound
+    fgn:  StyleType = Color.rgb(110, 110, 110) # Numbers foreground
+    fgna: StyleType = Color.rgb(220, 220, 220) # Active numbers foreground
+    fgt:  StyleType = Color.rgb(180, 180, 180) # Title foreground
+
     def copy(self, **changes) -> "EditorTheme":
         """Copy the style with changes"""
         return replace(self, **changes)
 
-class CodeColorSheme:
-    """Code color theme: Visual Studio Dark+."""
-    VS_code_DarkPlus = _CodeColorSheme()
+class EditorTheme:
+    """Editor theme: Visual Studio Dark+."""
+    VS_code_DarkPlus = _EditorTheme()
 
-class Syntax:
+class Syntax(Renderable):
+    __slots__ = ("code", "lang", "theme", "pos", "lang_config",)
+
+    def __init__(
+        self,
+        code: str,
+        lang: str = "python",
+        *,
+        theme: SyntaxTheme = SyntaxTheme.VS_code_DarkPlus,
+        pos: PosType = None
+    ):
+        '''
+        A universal method for highlighting any language.
+
+        >>> mycode = """
+        >>> #iostream
+        >>> #include <vector>
+        >>> #include <string>
+        >>> 
+        >>> class Engine {
+        >>> public:
+        >>>     void start() {
+        >>>         std::cout << "Engine started!" << std::endl;
+        >>>     }
+        >>> };
+        >>> 
+        >>> int main() {
+        >>>     Engine eng;
+        >>>     eng.start();
+        >>>     return 0;
+        >>> }
+        >>> """
+        >>> print(highlight(mycode, lang = 'cpp'))
+        '''
+        self.code = code
+        self.lang = lang
+        self.theme = theme
+        self.pos = pos
+
+        self.lang_config = SYNTAX_MAP.get(lang.lower(), None)
+
+        if self.lang_config == None:
+            raise ValueError(f'No language with the name "{lang}" was found. Check _syntax_map.py to see which languages are supported.')
+
     @classmethod
     def _core_highlight(
         cls,
@@ -54,7 +120,7 @@ class Syntax:
         class_defs: set, 
         func_calls: set, 
         var_decls: set,
-        theme: _CodeColorSheme = CodeColorSheme.VS_code_DarkPlus
+        theme: _SyntaxTheme = SyntaxTheme.VS_code_DarkPlus
     ) -> str:
         lang_config: Dict[str, Any] = SYNTAX_MAP.get(lang, {})
         
@@ -153,140 +219,78 @@ class Syntax:
 
         return "".join(result)
 
-    @classmethod
-    def highlight(cls, code: str, lang: str = 'python') -> str:
-        '''
-        A universal method for highlighting any language.
-
-        >>> mycode = """
-        >>> #iostream
-        >>> #include <vector>
-        >>> #include <string>
-        >>> 
-        >>> class Engine {
-        >>> public:
-        >>>     void start() {
-        >>>         std::cout << "Engine started!" << std::endl;
-        >>>     }
-        >>> };
-        >>> 
-        >>> int main() {
-        >>>     Engine eng;
-        >>>     eng.start();
-        >>>     return 0;
-        >>> }
-        >>> """
-        >>> print(highlight(mycode, lang = 'cpp'))
-        '''
-        lang = lang.lower()
-        lang_config = SYNTAX_MAP.get(lang, SYNTAX_MAP['python'])
-        
-        extractor = lang_config.get('extractor')
+    def flush(self) -> str:
+        extractor = self.lang_config.get('extractor')
         if extractor:
-            func_defs, class_defs, var_decls = extractor(code)
+            func_defs, class_defs, var_decls = extractor(self.code)
         else:
             func_defs, class_defs, var_decls = set(), set(), set()
 
-        func_calls = set(re.findall(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(', code)) - func_defs - class_defs
+        func_calls = set(re.findall(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(', self.code)) - func_defs - class_defs
 
-        return cls._core_highlight(code, lang, func_defs, class_defs, func_calls, var_decls)
-
-    @classmethod
-    def python(cls, code: str) -> str:
-        return cls.highlight(code, 'python')
+        return place(self._core_highlight(self.code, self.lang.lower(), func_defs, class_defs, func_calls, var_decls), self.pos)
 
     @classmethod
-    def js(cls, code: str) -> str:
-        return cls.highlight(code, 'js')
+    def python(cls, code, **kw):
+        return cls(code, "python", **kw)
 
     @classmethod
-    def php(cls, code: str) -> str:
-        return cls.highlight(code, 'php')
+    def js(cls, code, **kw):
+        return cls(code, "js", **kw)
 
     @classmethod
-    def zig(cls, code: str) -> str:
-        return cls.highlight(code, 'zig')
+    def php(cls, code, **kw):
+        return cls(code, "php", **kw)
 
     @classmethod
-    def c(cls, code: str) -> str:
-        return cls.highlight(code, 'c')
+    def zig(cls, code, **kw):
+        return cls(code, "zig", **kw)
 
     @classmethod
-    def cpp(cls, code: str) -> str:
-        return cls.highlight(code, 'cpp')
+    def c(cls, code, **kw):
+        return cls(code, "c", **kw)
 
     @classmethod
-    def cs(cls, code: str) -> str:
-        return cls.highlight(code, 'cs')
+    def cpp(cls, code, **kw):
+        return cls(code, "cpp", **kw)
 
     @classmethod
-    def rust(cls, code: str) -> str:
-        return cls.highlight(code, 'rust')
+    def cs(cls, code, **kw):
+        return cls(code, "cs", **kw)
 
     @classmethod
-    def lua(cls, code: str) -> str:
-        return cls.highlight(code, 'lua')
+    def rust(cls, code, **kw):
+        return cls(code, "rust", **kw)
 
     @classmethod
-    def java(cls, code: str) -> str:
-        return cls.highlight(code, 'java')
+    def lua(cls, code, **kw):
+        return cls(code, "lua", **kw)
 
     @classmethod
-    def bash(cls, code: str) -> str:
-        return cls.highlight(code, 'bash')
+    def java(cls, code, **kw):
+        return cls(code, "java", **kw)
 
     @classmethod
-    def shell(cls, code: str) -> str:
-        return cls.highlight(code, 'shell')
+    def bash(cls, code, **kw):
+        return cls(code, "bash", **kw)
 
     @classmethod
-    def bat(cls, code: str) -> str:
-        return cls.highlight(code, 'bat')
+    def shell(cls, code, **kw):
+        return cls(code, "shell", **kw)
 
     @classmethod
-    def css(cls, code: str) -> str:
-        return cls.highlight(code, 'css')
+    def bat(cls, code, **kw):
+        return cls(code, "bat", **kw)
 
     @classmethod
-    def html(cls, code: str) -> str:
-        return cls.highlight(code, 'html')
+    def css(cls, code, **kw):
+        return cls(code, "css", **kw)
+
+    @classmethod
+    def html(cls, code, **kw):
+        return cls(code, "html", **kw)
 
 _ANSI_RE = re.compile(r'(\x1b\[[0-9;]*m)')
-
-# Editor themes
-@dataclass(frozen=True)
-class _EditorTheme:
-    # Visual Studio Code Dark+ theme
-    bgc:  StyleType = ColorBG.rgb(30, 30, 30)  # Editor background
-    bga:  StyleType = ColorBG.rgb(40, 42, 46)  # Active line background
-    bgg:  StyleType = ColorBG.rgb(37, 37, 38)  # Gutter background
-    bgt:  StyleType = ColorBG.rgb(50, 50, 52)  # Title backgound
-    fgn:  StyleType = Color.rgb(110, 110, 110) # Numbers foreground
-    fgna: StyleType = Color.rgb(220, 220, 220) # Active numbers foreground
-    fgt:  StyleType = Color.rgb(180, 180, 180) # Title foreground
-
-    def copy(self, **changes) -> "EditorTheme":
-        """Copy the style with changes"""
-        return replace(self, **changes)
-
-class EditorTheme:
-    """Editor theme: Visual Studio Dark+."""
-    VS_code_DarkPlus = _EditorTheme()
-
-def _cut(line: str, width: int) -> str:
-    out, visible = [], 0
-    for part in _ANSI_RE.split(line):
-        if not part:
-            continue
-        if _ANSI_RE.fullmatch(part):
-            out.append(part)
-        else:
-            chunk = part[:max(width - visible, 0)]
-            out.append(chunk)
-            visible += len(chunk)
-            if visible >= width:
-                break
-    return ''.join(out) + Color.RESET
 
 def _split_lines(text: str) -> list[str]:
     lines, active = [], ''
@@ -296,30 +300,56 @@ def _split_lines(text: str) -> list[str]:
             active = '' if seq == Color.RESET else seq
     return lines
 
-def make_editor(code: str, lang: str = 'python', *, filename: Optional[str] = None, active_line: Optional[int] = None, width: Optional[int] = None, tab_size: int = 4, theme: _EditorTheme = EditorTheme.VS_code_DarkPlus) -> str:
-    """Returns the highlighted code formatted as it appears in the editor. Returns a string."""
-    cols = width or shutil.get_terminal_size((80, 24)).columns
-    code = code.expandtabs(tab_size).rstrip('\n')
-    lines = _split_lines(Syntax.highlight(code, lang))
+class Editor(Renderable):
+    __slots__ = ("code", "lang", "filename", "active_line", "width", "tab_size", "theme", "syntax_theme", "pos",)
 
-    num_w = len(str(len(lines)))
-    gutter_w = num_w + 4
-    code_w = max(cols - gutter_w, 1)
+    def __init__(
+        self,
+        code: str,
+        lang = "python",
+        *,
+        filename: str = None,
+        active_line: int = None,
+        width: int = None,
+        tab_size = 4,
+        theme: EditorTheme = EditorTheme.VS_code_DarkPlus,
+        syntax_theme: SyntaxTheme = SyntaxTheme.VS_code_DarkPlus,
+        pos: PosType = None
+    ):
+        self.code = code
+        self.lang = lang
+        self.filename = filename
+        self.active_line = active_line
+        self.width = width
+        self.tab_size = tab_size
+        self.theme = theme
+        self.syntax_theme = syntax_theme
+        self.pos = pos
+    
+    def flush(self) -> str:
+        """Returns the highlighted code formatted as it appears in the editor. Returns a string."""
+        cols = self.width or shutil.get_terminal_size((80, 24)).columns
+        code = self.code.expandtabs(self.tab_size).rstrip('\n')
+        lines = _split_lines(Syntax(code, self.lang).flush())
 
-    out = []
+        num_w = len(str(len(lines)))
+        gutter_w = num_w + 4
+        code_w = max(cols - gutter_w, 1)
 
-    if filename:
-        title = f" {filename}  •  {lang} "
-        out.append(f"{theme.bgt}{theme.fgt}{title.ljust(cols)}{Color.RESET}")
+        out = []
 
-    for n, line in enumerate(lines, start=1):
-        is_active = n == active_line
-        bg = theme.bga if is_active else theme.bgc
-        num_color = theme.fgna if is_active else theme.fgn
+        if self.filename:
+            title = f" {self.filename}  •  {self.lang} "
+            out.append(f"{self.theme.bgt}{self.theme.fgt}{title.ljust(cols)}{Color.RESET}")
 
-        gutter = f"{theme.bgg}{num_color} {n:>{num_w}} {theme.fgn}│ {Color.RESET}"
-        body = _cut(line, code_w).replace(Color.RESET, Color.RESET + bg)
-        pad = ' ' * (code_w - len(_ANSI_RE.sub('', body)))
-        out.append(f"{gutter}{bg}{body}{pad}{Color.RESET}")
+        for n, line in enumerate(lines, start=1):
+            is_active = n == self.active_line
+            bg = self.theme.bga if is_active else self.theme.bgc
+            num_color = self.theme.fgna if is_active else self.theme.fgn
 
-    return '\n'.join(out)
+            gutter = f"{self.theme.bgg}{num_color} {n:>{num_w}} {self.theme.fgn}│ {Color.RESET}"
+            body = _cut(line, code_w).replace(Color.RESET, Color.RESET + bg)
+            pad = ' ' * (code_w - len(_ANSI_RE.sub('', body)))
+            out.append(f"{gutter}{bg}{body}{pad}{Color.RESET}")
+
+        return '\n'.join(out)

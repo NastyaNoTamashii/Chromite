@@ -10,7 +10,7 @@ Author: NastyaNoTamashii
 
 """
 
-__all__ = ['move_cursor', 'place', 'hide_cursor', 'show_cursor', 'restore_cursor', 'clear']
+__all__ = ['move_cursor', 'place', 'hide_cursor', 'show_cursor', 'save_cursor', 'restore_cursor', 'clear']
 
 import os
 from .codes import ANSIElement, CSI

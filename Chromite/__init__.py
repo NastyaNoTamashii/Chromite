@@ -32,7 +32,7 @@ from .table import Table, TableStyle
 from .list import List
 from .powerline import Powerline, Segment, Cap
 from .tree import Tree, TreeStyle, Branch
-from .syntax import Syntax, make_editor
+from .syntax import Syntax, Editor, SyntaxTheme, EditorTheme
 from ._print import print
 from ._input import input
 
@@ -47,5 +47,5 @@ __all__ = [
     "List", # .list
     "Powerline", "Segment", "Cap", # .powerline
     "Tree", "TreeStyle", "Branch", # .tree
-    "Syntax", "make_editor" # .syntax
+    "Syntax", "Editor", "SyntaxTheme", "EditorTheme", # .syntax
 ]

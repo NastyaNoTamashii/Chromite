@@ -13,11 +13,11 @@ Author: NastyaNoTamashii
 __all__ = ['Table', 'TableStyle']
 
 import re
-import unicodedata
 from dataclasses import dataclass, replace
 from .codes import validate_compose, apply_compose, compose_to_ansi
 from .fmt import BaseCodes
 from ._base import Renderable
+from ._text import clusters, w, _ANSI, align
 from ._markup import parse_markup
 from ._types import StyleType
 
@@ -53,46 +53,6 @@ class TableStyle:
     Double = _Style("═", "║", "╔", "╗", "╚", "╝", "╦", "╩", "╠", "╣", "╬")
     ASCII = _Style("-", "|", "+", "+", "+", "+", "+", "+", "+", "+", "+")
 
-# Character width
-# ANSI codes (SGR styles/colors and OSC references) take up 0 columns
-_ANSI = re.compile(r"\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\))")
-_TOKEN = re.compile(_ANSI.pattern + "|.", re.S)  # ANSI code (entire code or a single character)
-_ZWJ, _VS16 = "‍", "️"  # emoji joiner / emoji presentation selector
-
-def _clusters(s):
-    """Splits a string into [fragment, width] pieces. This is the single source of
-    truth for width: _w measures with it and _put draws with it, so they never disagree.
-
-    - ANSI codes: width 0.
-    - Wide characters (CJK, most emoji): width 2.
-    - Combining marks, invisible format characters (zero-width space, ZWJ, variation
-      selectors) and skin tone modifiers are glued to the previous character.
-    - Emoji sequences (ZWJ, VS16, skin tone) are one piece. VS16 widens a narrow
-      character to 2 columns, as modern terminals do."""
-    out, last, join = [], None, False  # last: last visible piece; join: previous char was ZWJ
-    for tok in _TOKEN.findall(s):
-        if len(tok) > 1:  # ANSI code
-            out.append([tok, 0])
-            continue
-        glue = (join or unicodedata.category(tok) in ("Mn", "Me", "Cf")
-                or "\U0001f3fb" <= tok <= "\U0001f3ff")
-        if glue and last:
-            last[0] += tok
-            if tok == _VS16 and last[1] == 1:
-                last[1] = 2
-        elif glue:  # invisible character with nothing to attach to
-            out.append([tok, 0])
-        else:
-            last = [tok, 2 if unicodedata.east_asian_width(tok) in "WF" else 1]
-            out.append(last)
-        join = tok == _ZWJ and last is not None
-    return out
-
-def _w(s):
-    """Number of terminal columns the string occupies when printed."""
-    return sum(w for _, w in _clusters(s))
-
-
 def _prepare(text, compose) -> str:
     """The single entry point for any text going into the table:
     $style$ / :emoji: markup -> ANSI codes / emoji (so width is measured on what is
@@ -103,18 +63,10 @@ def _prepare(text, compose) -> str:
         text += str(BaseCodes.RESET)
     return apply_compose(text, compose)
 
-def _align(text, width, align):
-    gap = width - _w(text)
-    if align == "right":
-        return " " * gap + text
-    if align == "center":
-        return " " * (gap // 2) + text + " " * (gap - gap // 2)
-    return text + " " * gap
-
 def _put(row, pos, s):
     """Writes a string into a row of cells (wide characters take up two cells).
     Zero-width pieces (ANSI codes, invisible characters) are appended to the previous cell."""
-    for frag, cw in _clusters(s):
+    for frag, cw in clusters(s):
         if cw == 0:
             row[pos - 1] += frag
             continue
@@ -283,11 +235,11 @@ class Table(Renderable):
                 data.append([cell(v) for v in r] + [""] * (n - len(r)))
 
         # Leaf width, then adjust the spacing under the group headings.
-        w = [max([_w(c.title)] + [_w(r[i]) for r in data]) + 2 * pad
+        w = [max([w(c.title)] + [w(r[i]) for r in data]) + 2 * pad
              for i, c in enumerate(leaves)]
         for c, _, s, e in nodes:
             if c.children:
-                extra = _w(c.title) + 2 * pad - (sum(w[s:e]) + e - s - 1)
+                extra = w(c.title) + 2 * pad - (sum(w[s:e]) + e - s - 1)
                 for k in range(max(extra, 0)):
                     w[s + k % (e - s)] += 1
         x = [0]
@@ -346,7 +298,7 @@ class Table(Renderable):
                     if (y, j) in V:
                         row[x[j]] = st.v
             for x0, width, t, al in texts.get(y, []):
-                inner = _align(t, width - 2 * pad, al)
+                inner = align(t, width - 2 * pad, al)
                 _put(row, x0, " " * pad + inner + " " * pad)
             line = "".join(row)
             if base:  # After resetting the cell style, the table color reappears.

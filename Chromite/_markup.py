@@ -101,12 +101,12 @@ def parse_markup(text: str) -> str:
 
     # Replace :emoji:
     def replace_emoji(match):
-        name = str(match.group(1)).lower()
-        return EMOJI_MAP.get(name, match.group(0))
+        name = match.group(1)
+        return EMOJI_MAP.get(name.lower(), match.group(0))
 
     # Replace $style$
     def replace_style(match):
-        name = str(match.group(1)).lower()
+        name = match.group(1)
         return _resolve_style_tag(name)
 
     # :tag:

@@ -10,7 +10,7 @@ Author: NastyaNoTamashii
 
 """
 
-__all__ = ['Write', 'Read', 'cInject', 'clear']
+__all__ = ['Write', 'Read', 'cInject']
 
 import sys
 from typing import Optional
