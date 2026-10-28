@@ -16,7 +16,7 @@
 </div>
 
 ## ✨ About
-<strong>Chromite</strong> is a lightweight, zero-dependency Python library for building rich terminal user interfaces (TUI). It offers an elegant, object-oriented toolkit for styling output, handling interactive input, and rendering custom UI components.
+<strong>Chromite</strong> is a zero-dependency Python library for building rich terminal user interfaces (TUI). It offers an elegant, object-oriented toolkit for styling output, handling interactive input, and rendering custom UI components.
 
 An optimized library that simplifies writing code and helps with the tasks provided.
 
@@ -39,7 +39,11 @@ pip install -e .
 ## 🚀 Quick start
 
 ```python
-from Chromite import Color, Style, Write
+from Chromite import print, Color, Style, Write
+
+print("Hello, Chromite!", compose=[Color.Green, Style.Bold])
+
+# or you can also
 
 Write("Hello, Chromite!", compose=[Color.Green, Style.Bold]).display()
 ```
@@ -50,10 +54,10 @@ Use `$style$` for colors/styles and `:emoji:` for emoji right inside the text.
 `$reset$` clears everything.
 
 ```python
-from Chromite import Write
+from Chromite import Write, print
 
 Write("$bold$Build passed$reset$ :white_check_mark: $hex#FFFF00$2 warnings$reset$ :warning:").display()
-Write("$bg_red$$white$ ERROR $reset$ disk is full").display()
+print("$bg_red$$white$ ERROR $reset$ disk is full")
 ```
 
 ## 🌈 Colors
@@ -117,9 +121,9 @@ table.display()
 ## ⌨️ Input
 
 ```python
-from Chromite import Read, Color
+from Chromite import input, Read, Color
 
-name = Read("Your name > ", compose=Color.Blue, value_compose=Color.LightBlue).execute()
+name = input("Your name > ", compose=Color.Blue, value_compose=Color.LightBlue)
 pin = Read("PIN > ", type="pin").execute() # also: "password", "hidden", "int"
 
 print(f"Hi {name}!")
