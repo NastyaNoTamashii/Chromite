@@ -341,23 +341,24 @@ SYNTAX_MAP: Dict[str, Dict[str, Any]] = {
     'css': {
         'control_keywords': {'media', 'import', 'keyframes', 'supports', 'charset'},
         'storage_keywords': {
-            # More popular CSS
             'color', 'background', 'background-color', 'margin', 'padding',
             'width', 'height', 'display', 'position', 'font-size', 'font-family',
             'border', 'border-radius', 'flex', 'grid', 'align-items', 'justify-content',
-            'top', 'left', 'right', 'bottom', 'opacity', 'transition', 'transform'
+            'top', 'left', 'right', 'bottom', 'opacity', 'transition', 'transform',
         },
-        'constants': {'px', 'em', 'rem', 'vh', 'vw', '%', 'solid', 'flex', 'grid', 'block', 'inline', 'none', 'auto'},
+        'constants': {'px', 'em', 'rem', 'vh', 'vw', '%', 'solid', 'flex', 'grid',
+                      'block', 'inline', 'none', 'auto'},
         'builtins': {'rgb', 'rgba', 'hsl', 'var', 'calc'},
         'comments': [r'/\*[\s\S]*?\*/'],
         'strings': [r'\".*?\"', r'\'.*?\''],
         'var_prefix': '--',
+        'ident': r'(?:--|[.#])?-?[a-zA-Z_][a-zA-Z0-9_-]*',
         'extractor': lambda code: (
             set(),
-            # .class, #id
-            set(re.findall(r'([.#][a-zA-Z_][a-zA-Z0-9_-]*)', code)),
+            # .class #id
+            set(re.findall(r'(\.[a-zA-Z_][a-zA-Z0-9_-]*)', code)) | set(re.findall(r'(#[a-zA-Z_][a-zA-Z0-9_-]*)(?=[^;{}]*\{)', code)),
             # --var-name
-            set(re.findall(r'(--[a-zA-Z_][a-zA-Z0-9_-]*)', code))
-        )
+            set(re.findall(r'(--[a-zA-Z_][a-zA-Z0-9_-]*)', code)),
+        ),
     },
 }

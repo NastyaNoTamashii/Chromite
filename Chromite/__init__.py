@@ -16,7 +16,7 @@ __title__ = "Chromite"
 __author__ = "NastyaNoTamashii"
 __license__ = "MIT"
 __copyright__ = "Copyright 2026-present NastyaNoTamashii"
-__version__ = "0.7.0"
+__version__ = "0.7.1"
 
 from .io import (
     Write, Read, cInject
@@ -33,6 +33,7 @@ from .list import List
 from .powerline import Powerline, Segment, Cap
 from .tree import Tree, TreeStyle, Branch
 from .syntax import Syntax, Editor, SyntaxTheme, EditorTheme
+from .traceback import DoError, show_error, install, uninstall, catch
 from ._print import print
 from ._input import input
 
@@ -48,4 +49,5 @@ __all__ = [
     "Powerline", "Segment", "Cap", # .powerline
     "Tree", "TreeStyle", "Branch", # .tree
     "Syntax", "Editor", "SyntaxTheme", "EditorTheme", # .syntax
+    "DoError", "show_error", "install", "uninstall", "catch", # .traceback
 ]

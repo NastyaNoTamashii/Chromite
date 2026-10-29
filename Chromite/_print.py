@@ -22,11 +22,13 @@ def print(
         flush=False,
         compose=None,
         pos=None,
+        align='left',
+        width=None,
         markup=True
     ):
         """Drop-in replacement for the built-in print() with Chromite markup ($red$, :emoji:)."""
         text = (" " if sep is None else sep).join(map(str, values))
-        out = Write(text, compose=compose, pos=pos, markup=markup).flush()
+        out = Write(text, compose=compose, pos=pos, align=align, width=width, markup=markup).flush()
         reset = str(BaseCodes.RESET)
         if "\x1b[" in out and not out.endswith(reset):  # стиль из разметки не должен протекать дальше
             out += reset

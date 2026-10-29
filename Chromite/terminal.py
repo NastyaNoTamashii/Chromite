@@ -14,12 +14,13 @@ __all__ = ['move_cursor', 'place', 'hide_cursor', 'show_cursor', 'save_cursor', 
 
 import os
 from .codes import ANSIElement, CSI
+from ._types import PosType
 
 def move_cursor(x: int, y: int) -> ANSIElement:
     """Moves the cursor to position (x, y) / (col, row). Numbering starts at 1, 1."""
     return ANSIElement(f"{CSI}{y};{x}H")
 
-def place(text: str, pos) -> str:
+def place(text: str, pos: PosType) -> str:
     """
     Puts 'text' at pos=(x, y), numbering from 0, 0.
     Every line of a multi-line text gets its own cursor move, so the x offset

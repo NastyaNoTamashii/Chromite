@@ -10,6 +10,7 @@ Author: NastyaNoTamashii
 """
 
 import os
+from ._errors import InvalidComposeError
 
 # Initialize ANSI support in Windows consoles.
 os.system("")
@@ -72,4 +73,5 @@ def validate_compose(compose) -> None:
         return
     if isinstance(compose, (list, tuple)) and all(isinstance(s, ANSIElement) for s in compose):
         return
-    raise TypeError("The 'compose' component must have a Chromite object. (Color, ColorBG, Style etc.)")
+    raise InvalidComposeError(f"compose must contain ANSIElement, got {type(compose).__name__}",
+                              hint="use Color.*, ColorBG.* or Style.*")

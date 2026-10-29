@@ -1,10 +1,12 @@
 import Chromite
-from Chromite import Color, ColorBG, Style, Table, print, input, Syntax, make_editor
+from Chromite import Color, ColorBG, Style, Table, print, input, Syntax, Editor
 from Chromite.powerline import Powerline, Segment, Cap
+from Chromite.traceback import install
 
+install()
 Chromite.clear()
 
-Chromite.Write("$red$Welcome! :tada:$reset$", pos=(24, 1)).display()
+Chromite.Write("$red$Welcome! :tada:$reset$", pos=(0, 1), align="center").display()
 print('\n\n')
 
 name = Chromite.Read("Your name > ", compose=Color.Green, value_compose=Color.LightBlue, type='hidden').execute()
@@ -75,7 +77,7 @@ print(Chromite.Tree(
     mytree,
     compose=Color.Gold,
     branch_compose=Color.Red,
-    style=Chromite.TreeStyle.Rounded
+    style=Chromite.TreeStyle.Rounded,
 ).flush())
 
 # --- PHP ---
@@ -91,7 +93,7 @@ $g->sayHello("World");
 """
 
 print("\n--- PHP EDITOR WITH HIGHLIGHT ---")
-print(make_editor(php_code, 'php', filename='MyCode.php'))
+print(Editor(php_code, 'php', filename='MyCode.php'))
 
 # --- C# (CS) ---
 cs_code = """using System;
@@ -107,4 +109,4 @@ namespace App {
 """
 
 print("\n--- CS EDITOR WITH HIGHLIGHT ---")
-print(make_editor(cs_code, 'cs', filename='MyCode.cs'))
+print(Editor(cs_code, 'cs', filename='MyCode.cs'))

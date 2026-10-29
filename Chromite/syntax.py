@@ -19,7 +19,8 @@ from .terminal import place
 from .fmt import Color, ColorBG
 from ._base import Renderable
 from ._types import StyleType, PosType
-from ._text import _cut
+from ._errors import UnknownLanguageError
+from ._text import cut
 from ._syntax_map import SYNTAX_MAP
 import shutil
 
@@ -109,7 +110,8 @@ class Syntax(Renderable):
         self.lang_config = SYNTAX_MAP.get(lang.lower(), None)
 
         if self.lang_config == None:
-            raise ValueError(f'No language with the name "{lang}" was found. Check _syntax_map.py to see which languages are supported.')
+            raise UnknownLanguageError(f'no language with the name "{lang}" was found.',
+                                       hint='Check _syntax_map.py to see which languages are supported.')
 
     @classmethod
     def _core_highlight(
@@ -143,7 +145,8 @@ class Syntax(Renderable):
         string_regexes = [re.compile(f'^({p})', re.DOTALL) for p in strings_patterns]
         
         number_regex = re.compile(r'^(\b\d+(?:\.\d+)?\b)')
-        ident_regex = re.compile(r'^(\$[a-zA-Z_][a-zA-Z0-9_]*|\@[a-zA-Z_][a-zA-Z0-9_]*|\b[a-zA-Z_][a-zA-Z0-9_]*\b)')
+        default_ident = r'\$[a-zA-Z_]\w*|\@[a-zA-Z_]\w*|\b[a-zA-Z_]\w*\b'
+        ident_regex = re.compile('^(' + lang_config.get('ident', default_ident) + ')')
         ws_regex = re.compile(r'^(\s+)')
 
         result = []
@@ -348,7 +351,7 @@ class Editor(Renderable):
             num_color = self.theme.fgna if is_active else self.theme.fgn
 
             gutter = f"{self.theme.bgg}{num_color} {n:>{num_w}} {self.theme.fgn}│ {Color.RESET}"
-            body = _cut(line, code_w).replace(Color.RESET, Color.RESET + bg)
+            body = cut(line, code_w).replace(Color.RESET, Color.RESET + bg)
             pad = ' ' * (code_w - len(_ANSI_RE.sub('', body)))
             out.append(f"{gutter}{bg}{body}{pad}{Color.RESET}")
 

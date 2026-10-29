@@ -49,7 +49,7 @@ def clusters(s):
         join = tok == _ZWJ and last is not None
     return out
 
-def w(s):
+def wid(s):
     """Number of terminal columns the string occupies when printed."""
     return sum(w for _, w in clusters(s))
 
@@ -63,7 +63,7 @@ def cut(line: str, width: int) -> str:
     return ''.join(out) + BaseCodes.RESET
 
 def align(text, width, align):
-    gap = width - w(text)
+    gap = width - wid(text)
     if align == "right":
         return " " * gap + text
     if align == "center":

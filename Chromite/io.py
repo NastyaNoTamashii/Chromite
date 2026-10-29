@@ -13,11 +13,14 @@ Author: NastyaNoTamashii
 __all__ = ['Write', 'Read', 'cInject']
 
 import sys
+import shutil
 from typing import Optional
 from .terminal import show_cursor, place
 from .codes import ANSIElement, validate_compose, apply_compose
 from .fmt import BaseCodes
 from ._base import Renderable
+from ._text import align
+from ._errors import *
 from ._markup import parse_markup
 from ._types import StyleType, PosType
 
@@ -79,7 +82,7 @@ def _read_masked_input(mask_char: str) -> str:
     return "".join(buf)
 
 class Write(Renderable):
-    __slots__ = ("text", "compose", "pos", "markup",)
+    __slots__ = ("text", "compose", "pos", "align", "width", "markup",)
 
     def __init__(
         self, 
@@ -87,7 +90,9 @@ class Write(Renderable):
         *, 
         compose: StyleType = None, 
         pos: Optional[PosType] = None,
-        markup: bool = True,
+        align: str = "left",
+        width = None,
+        markup: bool = True
     ):
         """
         :param text: The raw text string to be processed and rendered to the terminal.
@@ -99,11 +104,21 @@ class Write(Renderable):
         self.compose = compose
         self.pos = pos
 
+        if align not in ("left", "right", "center"):
+            raise InvalidAlignError(f"align={align!r} is not supported",
+                                hint="use 'left', 'right' or 'center'")
+        self.width, self.align = width, align
+
         validate_compose(self.compose)
 
     def flush(self) -> str:
         """Returns the finished text as a string, with the style (compose) and the cursor position (pos) applied. Nothing is printed. Calling it several times gives the same result."""
         text = apply_compose(self.text, self.compose)
+        
+        if self.align != "left" or self.width:
+            w = self.width or shutil.get_terminal_size().columns
+            text = "\n".join(align(line, w, self.align) for line in text.split("\n"))
+        
         return place(text, self.pos)
 
 class Read:

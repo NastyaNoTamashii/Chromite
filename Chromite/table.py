@@ -17,7 +17,7 @@ from dataclasses import dataclass, replace
 from .codes import validate_compose, apply_compose, compose_to_ansi
 from .fmt import BaseCodes
 from ._base import Renderable
-from ._text import clusters, w, _ANSI, align
+from ._text import clusters, wid, _ANSI, align
 from ._markup import parse_markup
 from ._types import StyleType
 
@@ -235,11 +235,11 @@ class Table(Renderable):
                 data.append([cell(v) for v in r] + [""] * (n - len(r)))
 
         # Leaf width, then adjust the spacing under the group headings.
-        w = [max([w(c.title)] + [w(r[i]) for r in data]) + 2 * pad
+        w = [max([wid(c.title)] + [wid(r[i]) for r in data]) + 2 * pad
              for i, c in enumerate(leaves)]
         for c, _, s, e in nodes:
             if c.children:
-                extra = w(c.title) + 2 * pad - (sum(w[s:e]) + e - s - 1)
+                extra = wid(c.title) + 2 * pad - (sum(w[s:e]) + e - s - 1)
                 for k in range(max(extra, 0)):
                     w[s + k % (e - s)] += 1
         x = [0]
