@@ -2,7 +2,7 @@
 
 Chromite/_errors.py
 ~~~~~~~~~~~~~~~~~~~
-Exception classes of the library. Depends on nothing (floor 1).
+Exception classes of the library.
 
 Copyright (C) 2026 NastyaNoTamashii.
 
@@ -11,13 +11,15 @@ Copyright (C) 2026 NastyaNoTamashii.
 __all__ = ['ChromiteError', 'InvalidComposeError', 'InvalidAlignError', 'UnknownLanguageError']
 
 class ChromiteError(Exception):
-    """
-    Base class for all Chromite errors.
+    __slots__ = ("message", "hint",)
 
-    :param message: What went wrong.
-    :param hint: Optional advice how to fix it (shown by the pretty error view).
-    """
     def __init__(self, message: str = "", *, hint: str | None = None):
+        """
+        Base class for all Chromite errors.
+
+        :param message: What went wrong.
+        :param hint: Optional advice how to fix it (shown by the pretty error view).
+        """
         super().__init__(message)
         self.message = message
         self.hint = hint

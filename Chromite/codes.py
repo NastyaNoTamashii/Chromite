@@ -69,9 +69,12 @@ def apply_compose(content, compose) -> str:
     return content
 
 def validate_compose(compose) -> None:
-    if compose is None or isinstance(compose, ANSIElement):
+    if (
+        compose is None
+        or isinstance(compose, ANSIElement)
+        or (isinstance(compose, (list, tuple)) and all(isinstance(s, ANSIElement) for s in compose))
+    ):
         return
-    if isinstance(compose, (list, tuple)) and all(isinstance(s, ANSIElement) for s in compose):
-        return
+
     raise InvalidComposeError(f"compose must contain ANSIElement, got {type(compose).__name__}",
                               hint="use Color.*, ColorBG.* or Style.*")
