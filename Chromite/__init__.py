@@ -34,6 +34,7 @@ from .powerline import Powerline, Segment, Cap
 from .tree import Tree, TreeStyle, Branch
 from .syntax import Syntax, Editor, SyntaxTheme, EditorTheme
 from .traceback import DoError, show_error, install, uninstall, catch
+from .keys import read_key, iter_keys, wait_key, confirm, pause, Hotkeys, STOP
 from ._print import print
 from ._input import input
 
@@ -50,4 +51,5 @@ __all__ = [
     "Tree", "TreeStyle", "Branch", # .tree
     "Syntax", "Editor", "SyntaxTheme", "EditorTheme", # .syntax
     "DoError", "show_error", "install", "uninstall", "catch", # .traceback
+    'read_key', 'iter_keys', 'wait_key', 'confirm', 'pause', 'Hotkeys', 'STOP', # .keys
 ]

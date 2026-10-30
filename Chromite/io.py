@@ -18,67 +18,32 @@ from typing import Optional
 from .terminal import show_cursor, place
 from .codes import ANSIElement, validate_compose, apply_compose
 from .fmt import BaseCodes
+from .keys import iter_keys
 from ._base import Renderable
 from ._text import align
 from ._errors import *
 from ._markup import parse_markup
 from ._types import StyleType, PosType
 
-try:
-    import msvcrt
-    WINDOWS = True
-except ImportError:
-    import tty
-    import termios
-    WINDOWS = False
-
 def _read_masked_input(mask_char: str) -> str:
     """Reads input with character masking, without standard terminal echo."""
     if not sys.stdin.isatty():
         return sys.stdin.readline().rstrip("\n")
     buf = []
-
-    def erase():
-        if mask_char:
-            print("\b \b", end="", flush=True)
-
-    def add(ch):
-        buf.append(ch)
-        if mask_char:
-            print(mask_char, end="", flush=True)
-
-    if WINDOWS:
-        while True:
-            ch = msvcrt.getwch()
-            if ch in ("\r", "\n"):
-                print(); break
-            if ch == "\x03": # Ctrl+C
-                raise KeyboardInterrupt
-            if ch in ("\x00", "\xe0"):
-                msvcrt.getwch() # Second arrow key/F key code.
-                continue
-            if ch == "\x08": # Backspace
-                if buf: buf.pop(); erase()
-            elif ch.isprintable():
-                add(ch)
-    else:
-        fd = sys.stdin.fileno()
-        old = tty.setcbreak(fd, termios.TCSADRAIN)
-        try:
-            while True:
-                ch = sys.stdin.read(1)
-                if ch in ("\r", "\n"):
-                    print(); break
-                if ch in ("\x7f", "\x08"): # Backspace
-                    if buf: buf.pop(); erase()
-                elif ch == "\x1b": # Arrows: \x1b[A, \x1b[3~ ...
-                    if sys.stdin.read(1) == "[":
-                        while not "@" <= sys.stdin.read(1) <= "~":
-                            pass
-                elif ch.isprintable():
-                    add(ch)
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+    for key in iter_keys():
+        if key == "enter":
+            print()
+            break
+        if key == "backspace":
+            if buf:
+                buf.pop()
+                if mask_char:
+                    print("\b \b" * len(mask_char), end="", flush=True)
+        elif len(key) == 1 and key.isprintable():
+            buf.append(key)
+            if mask_char:
+                print(mask_char, end="", flush=True)
+        # arrows, delete etc. are ignored
     return "".join(buf)
 
 class Write(Renderable):
